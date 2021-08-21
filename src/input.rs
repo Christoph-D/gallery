@@ -1,6 +1,6 @@
 //! This module reads the source directory into the internal representation.
 //! This is a read-only operation.
-use crate::gallery::{Gallery, Image, ImageGroup};
+use crate::model::{Gallery, Image, ImageGroup};
 
 use anyhow::{anyhow, Context, Error, Result};
 use chrono::naive::NaiveDate;

@@ -1,5 +1,5 @@
 //! This module writes the images and thumbnails that make up the gallery.
-use crate::gallery::{Image, ImageGroup};
+use crate::model::{Image, ImageGroup};
 
 use anyhow::{anyhow, Context, Result};
 use std::{fs, path::PathBuf, process};

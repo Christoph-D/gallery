@@ -4,7 +4,7 @@
 mod html;
 mod images;
 
-use crate::gallery::Gallery;
+use crate::model::Gallery;
 
 use anyhow::{anyhow, Context, Result};
 use handlebars::Handlebars;

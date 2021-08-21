@@ -3,7 +3,7 @@
 //! Currently, this is
 //! * an overview page showing all the images,
 //! * one page per image group for image groups with markdown files.
-use crate::gallery::{Gallery, Image, ImageGroup};
+use crate::model::{Gallery, Image, ImageGroup};
 
 use anyhow::{anyhow, Context, Result};
 use serde::Serialize;
