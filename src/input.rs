@@ -10,9 +10,8 @@ use std::{fmt, fs};
 pub fn gallery_from_dir(path: &Path) -> Result<Gallery> {
     let mut image_groups = Vec::<ImageGroup>::new();
     for d in read_dir(path)?.iter().filter(|d| d.is_dir) {
-        let dirname = d.filename.clone();
         let contents = read_dir(&d.path)?;
-        if let Some(group) = ImageGroup::from_entries(dirname, &contents)? {
+        if let Some(group) = ImageGroup::from_entries(&d.filename, &contents)? {
             image_groups.push(group);
         }
     }
@@ -47,7 +46,7 @@ impl Image {
 }
 
 impl ImageGroup {
-    fn from_entries(path: PathBuf, v: &[DirEntry]) -> Result<Option<ImageGroup>> {
+    fn from_entries(path: &Path, v: &[DirEntry]) -> Result<Option<ImageGroup>> {
         let id = String::from(path.to_string_lossy());
         let (title, date) = {
             let re = Regex::new(r"^(\d{4})-(\d{2})-(\d{2}).").unwrap();
@@ -79,7 +78,7 @@ impl ImageGroup {
         images.sort();
         Ok(Some(ImageGroup {
             id,
-            path,
+            path: path.to_owned(),
             title,
             date,
             images,
@@ -137,7 +136,7 @@ fn read_dir(base_dir: &Path) -> Result<Vec<DirEntry>> {
 mod tests {
     use super::{DirEntry, Image, ImageGroup};
     use chrono::naive::NaiveDate;
-    use std::path::PathBuf;
+    use std::path::{Path, PathBuf};
 
     fn dir(dirname: &str, filenames: &[(&str, bool)]) -> Vec<DirEntry> {
         filenames
@@ -181,7 +180,7 @@ mod tests {
     #[test]
     fn test_empty_dir() {
         assert_eq!(
-            ImageGroup::from_entries(PathBuf::from("2021-01-01 Fuji, Japan"), &[]).unwrap(),
+            ImageGroup::from_entries(Path::new("2021-01-01 Fuji, Japan"), &[]).unwrap(),
             Some(ImageGroup::from(SimpleImageGroup {
                 title: "Fuji, Japan",
                 name: "2021-01-01 Fuji, Japan",
@@ -195,7 +194,7 @@ mod tests {
     fn test_simple_dir() {
         assert_eq!(
             ImageGroup::from_entries(
-                PathBuf::from("2021-01-01 Fuji, Japan"),
+                Path::new("2021-01-01 Fuji, Japan"),
                 &dir(
                     "2021-01-01 Fuji, Japan",
                     &[("Valley.webp", false), ("Summit.webp", false),]
@@ -218,7 +217,7 @@ mod tests {
     fn test_index() {
         assert_eq!(
             ImageGroup::from_entries(
-                PathBuf::from("2021-01-01 Fuji, Japan"),
+                Path::new("2021-01-01 Fuji, Japan"),
                 &dir("some/path/2021-01-01 Fuji, Japan", &[("index.md", false)])
             )
             .unwrap(),
@@ -235,7 +234,7 @@ mod tests {
     fn test_ignored_entries() {
         assert_eq!(
             ImageGroup::from_entries(
-                PathBuf::from("2021-12-01 Fuji, Japan"),
+                Path::new("2021-12-01 Fuji, Japan"),
                 &dir(
                     "some/path/2021-12-01 Fuji, Japan",
                     &[
@@ -259,7 +258,7 @@ mod tests {
     fn test_missing_date_in_dirname() {
         assert_eq!(
             ImageGroup::from_entries(
-                PathBuf::from("2021-01 Fuji, Japan"),
+                Path::new("2021-01 Fuji, Japan"),
                 &dir("some/path/2021-01 Fuji, Japan", &[("Summit.webp", false)])
             )
             .unwrap(),
