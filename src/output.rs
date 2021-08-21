@@ -269,20 +269,6 @@ mod images {
         Ok(())
     }
 
-    pub fn relative_output_path(group: &ImageGroup, image: &Image) -> Result<PathBuf> {
-        Ok(to_web_path(&group.path)?.join(to_web_path(&image.file_name)?))
-    }
-
-    pub fn output_path(
-        group: &ImageGroup,
-        image: &Image,
-        config: &Config,
-    ) -> Result<Option<PathBuf>> {
-        Ok(none_if_exists(
-            config.output_path.join(relative_output_path(group, image)?),
-        ))
-    }
-
     pub fn relative_thumbnail_path(
         group: &ImageGroup,
         image: &Image,
@@ -296,7 +282,19 @@ mod images {
         Ok(PathBuf::from("thumbnails").join(size).join(&suffix))
     }
 
-    pub fn thumbnail_path(
+    fn output_path(group: &ImageGroup, image: &Image, config: &Config) -> Result<Option<PathBuf>> {
+        Ok(none_if_exists(
+            [
+                &config.output_path,
+                &to_web_path(&group.path)?,
+                &to_web_path(&image.file_name)?,
+            ]
+            .iter()
+            .collect(),
+        ))
+    }
+
+    fn thumbnail_path(
         group: &ImageGroup,
         image: &Image,
         config: &Config,
