@@ -88,7 +88,7 @@ struct GalleryData {
 
 #[derive(Serialize)]
 struct ImageGroupData {
-    title: String,
+    title: Option<String>,
     footer: Option<String>,
     date: String,
     markdown_content: Option<String>,
@@ -110,8 +110,16 @@ impl ImageGroupData {
         image_group: &ImageGroup,
         thumbnail_type: &images::ThumbnailType,
     ) -> Result<ImageGroupData> {
+        // Suppress the title if it's redundant.
+        let title = if image_group.images.len() == 1
+            && image_group.images.get(0).unwrap().name == image_group.title
+        {
+            None
+        } else {
+            Some(image_group.title.clone())
+        };
         Ok(ImageGroupData {
-            title: image_group.title.clone(),
+            title,
             footer: config.page_footer.clone(),
             date: image_group.date.to_string(),
             markdown_content: None,
