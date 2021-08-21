@@ -13,7 +13,6 @@ pub struct Image {
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ImageGroup {
-    pub id: String,
     // Path relative to the base directory.
     pub path: PathBuf,
     pub title: String,
@@ -32,8 +31,7 @@ impl fmt::Display for ImageGroup {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "<{}> \"{} ({})\" -> [{}] [{:?}]",
-            self.id,
+            "\"{} ({})\" -> [{}] [{:?}]",
             self.title,
             self.date,
             self.images

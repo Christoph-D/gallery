@@ -47,8 +47,8 @@ impl Image {
 
 impl ImageGroup {
     fn from_entries(path: &Path, v: &[DirEntry]) -> Result<Option<ImageGroup>> {
-        let id = String::from(path.to_string_lossy());
         let (title, date) = {
+            let id = String::from(path.to_string_lossy());
             let re = Regex::new(r"^(\d{4})-(\d{2})-(\d{2}).").unwrap();
             let c = {
                 match re.captures(&id) {
@@ -77,7 +77,6 @@ impl ImageGroup {
         }
         images.sort();
         Ok(Some(ImageGroup {
-            id,
             path: path.to_owned(),
             title,
             date,
@@ -159,7 +158,6 @@ mod tests {
     impl<'a> From<SimpleImageGroup<'a>> for ImageGroup {
         fn from(s: SimpleImageGroup) -> ImageGroup {
             ImageGroup {
-                id: String::from(s.name),
                 path: PathBuf::from(s.name),
                 title: String::from(s.title),
                 date: s.date,
