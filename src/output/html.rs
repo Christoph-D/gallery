@@ -1,3 +1,8 @@
+//! This module writes the HTML pages that make up the gallery.
+//!
+//! Currently, this is
+//! * an overview page showing all the images,
+//! * one page per image group for image groups with markdown files.
 use crate::gallery::{Gallery, Image, ImageGroup};
 
 use anyhow::{anyhow, Context, Result};
@@ -6,12 +11,14 @@ use std::{fs, path::PathBuf};
 
 use super::{create_parent_directories, images, to_web_path, Config, RunMode};
 
+/// An HTML file ready to be written to disk.
 pub struct HTMLFile {
     content: String,
     output_path: PathBuf,
 }
 
 impl HTMLFile {
+    /// Writes the HTML file to disk.
     pub fn write(&self, config: &Config) -> Result<()> {
         match &config.run_mode {
             RunMode::Normal => {
@@ -31,6 +38,10 @@ impl HTMLFile {
     }
 }
 
+/// Renders the overview page into an [`HTMLFile`].
+///
+/// This is a read-only operation.
+/// You need to call [`HTMLFile::write`] to actually write the file to disk.
 pub fn render_overview_html(
     gallery: &Gallery,
     config: &Config,
@@ -55,6 +66,10 @@ pub fn render_overview_html(
     })
 }
 
+/// Renders an image group page into an [`HTMLFile`]. This may be [`None`] if no HTML is needed.
+///
+/// This is a read-only operation.
+/// You need to call [`HTMLFile::write`] to actually write the file to disk.
 pub fn render_image_group_html(
     image_group: &ImageGroup,
     config: &Config,
@@ -79,6 +94,7 @@ pub fn render_image_group_html(
     }))
 }
 
+/// Used in handlebars templates to describe a gallery.
 #[derive(Serialize)]
 struct GalleryData {
     title: String,
@@ -86,6 +102,7 @@ struct GalleryData {
     image_groups: Vec<ImageGroupData>,
 }
 
+/// Used in handlebars templates to describe an image group.
 #[derive(Serialize)]
 struct ImageGroupData {
     title: Option<String>,
@@ -96,6 +113,7 @@ struct ImageGroupData {
     url: String,
 }
 
+/// Used in handlebars templates to describe a single image.
 #[derive(Serialize)]
 struct ImageData {
     file_name: String,

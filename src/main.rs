@@ -1,3 +1,5 @@
+//! A static site generator for photo galleries.
+
 mod gallery;
 mod input;
 mod output;

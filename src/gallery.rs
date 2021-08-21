@@ -1,29 +1,41 @@
+//! This module defines data structures to represent image galleries throughput the program.
 use chrono::naive::NaiveDate;
 use std::fmt;
 use std::path::PathBuf;
 
+/// An input image.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Image {
+    /// The user-visible name of the image.
     pub name: String,
-    // Full path to the source image.
+    /// The full path to the source image.
     pub path: PathBuf,
-    // The file name of the source image.
+    /// The file name of the source image.
     pub file_name: PathBuf,
 }
 
+/// A list of input images.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ImageGroup {
-    // Path relative to the base directory.
+    /// The path to the image group directory relative to the base directory.
     pub path: PathBuf,
+    /// The user-visible title of the image group.
     pub title: String,
+    /// The date of the image group.
     pub date: NaiveDate,
+    /// The contained images.
+    /// Sorted alphabetically.
     pub images: Vec<Image>,
+    /// An optional markdown file to explain the image group.
+    /// Not yet fully implemented.
     pub markdown_file: Option<PathBuf>,
 }
 
+/// A gallery of images.
 #[derive(Debug)]
 pub struct Gallery {
-    // Sorted by date (most recent first).
+    /// The list of image groups in the gallery.
+    /// Sorted by date (most recent first).
     pub image_groups: Vec<ImageGroup>,
 }
 

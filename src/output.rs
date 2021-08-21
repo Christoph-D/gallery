@@ -1,3 +1,6 @@
+//! This module writes the gallery to the output directory.
+//!
+//! Together with its submodules, this module writes everything including images, thumbnails, and HTML files.
 mod html;
 mod images;
 
@@ -8,18 +11,25 @@ use handlebars::Handlebars;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+/// Normal or dryrun (read-only) mode.
 pub enum RunMode {
     Normal,
     DryRun,
 }
 
+/// Configuration options for the output module.
 pub struct Config {
+    /// The target directory where to write the gallery.
     pub output_path: PathBuf,
+    /// Normal or dryrun (read-only) mode.
     pub run_mode: RunMode,
+    /// The top-level title of the generated gallery.
     pub page_title: String,
+    /// An optional footer to show (for example) a copyright notice.
     pub page_footer: Option<String>,
 }
 
+/// Writes the gallery to disk.
 pub fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
     let mut handlebars = Handlebars::new();
     handlebars.set_strict_mode(true);
@@ -39,6 +49,7 @@ pub fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
     write_static(config)
 }
 
+/// Writes static assets such as CSS and Javascript files to disk.
 fn write_static(config: &Config) -> Result<()> {
     let css_path = config.output_path.join("css").join("bootstrap.min.css");
     let custom_css_path = config.output_path.join("css").join("style.css");
@@ -69,6 +80,11 @@ fn write_static(config: &Config) -> Result<()> {
     Ok(())
 }
 
+/// Takes a path to a file and creates all parent directories.
+///
+/// Differences to [`fs::create_dir_all`]:
+/// * This function skips the last element of the path, assuming it's a file name.
+/// * This function returns more descriptive errors of the right type.
 fn create_parent_directories(path: &Path) -> Result<()> {
     let dir = path.parent().ok_or_else(|| {
         anyhow!(
@@ -80,6 +96,7 @@ fn create_parent_directories(path: &Path) -> Result<()> {
         .with_context(|| format!("Failed to create directory \"{}\"", dir.to_string_lossy()))
 }
 
+/// Converts a single-element path into something suitable for a URL.
 fn to_web_path(path: &Path) -> Result<PathBuf> {
     let p = path.to_str().ok_or_else(|| {
         anyhow!(

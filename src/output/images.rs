@@ -1,3 +1,4 @@
+//! This module writes the images and thumbnails that make up the gallery.
 use crate::gallery::{Image, ImageGroup};
 
 use anyhow::{anyhow, Context, Result};
@@ -5,16 +6,24 @@ use std::{fs, path::PathBuf, process};
 
 use super::{create_parent_directories, to_web_path, Config, RunMode};
 
+/// Different thumbnail types for different use cases.
+///
+/// The overview page uses small thumbnails, the image group pages use large thumbnails.
 pub enum ThumbnailType {
     Small,
     Large,
 }
 
+/// An image group ready to be written to disk.
 pub struct ImageGroupFiles {
     images: Vec<ImageFile>,
 }
 
 impl ImageGroupFiles {
+    /// Writes the image group (all images, all thumbnails) to disk.
+    ///
+    /// This can be a very slow operation for large numbers of images, especially
+    /// if many thumbnails need to be created. This function parallelizes its work.
     pub fn write(&self, config: &Config) -> Result<()> {
         use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
         self.images
@@ -25,6 +34,10 @@ impl ImageGroupFiles {
     }
 }
 
+/// Prepares an image group for writing.
+///
+/// This is a fast read-only operation.
+/// You need to call [`ImageGroupFiles::write`] to actually write the files to disk.
 pub fn render_images(image_group: &ImageGroup, config: &Config) -> Result<ImageGroupFiles> {
     Ok(ImageGroupFiles {
         images: image_group
@@ -61,6 +74,7 @@ fn output_path(group: &ImageGroup, image: &Image, config: &Config) -> Result<Opt
     ))
 }
 
+/// Returns [`None`] if the path points to a non-existing file. Otherwise, returns the original path.
 fn none_if_exists(path: PathBuf) -> Option<PathBuf> {
     if path.exists() {
         None
@@ -69,6 +83,7 @@ fn none_if_exists(path: PathBuf) -> Option<PathBuf> {
     }
 }
 
+/// A single image ready to be written to disk.
 struct ImageFile {
     source_path: PathBuf,
     output_path: Option<PathBuf>,
@@ -76,6 +91,7 @@ struct ImageFile {
     thumbnail_path_large: Option<PathBuf>,
 }
 
+/// Prepares a single image for writing.
 fn render_image(image: &Image, group: &ImageGroup, config: &Config) -> Result<ImageFile> {
     Ok({
         ImageFile {
@@ -108,6 +124,7 @@ fn thumbnail_path(
 }
 
 impl ImageFile {
+    /// Writes the image and its thumbnails to disk.
     fn write(&self, config: &Config) -> Result<()> {
         self.write_image(config)?;
         self.write_thumbnails(config)
