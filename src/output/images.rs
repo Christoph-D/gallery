@@ -15,9 +15,7 @@ pub fn write_images(image_group: &ImageGroup, config: &Config) -> Result<()> {
     image_group
         .images
         .par_iter()
-        .map(|img| {
-            render_image(&img, image_group, config).map(|rendered| rendered.write(config))
-        })
+        .map(|img| render_image(&img, image_group, config).map(|rendered| rendered.write(config)))
         .collect::<Result<Vec<_>>>()?;
     Ok(())
 }
@@ -79,17 +77,16 @@ fn check_thumbnail_path(
     config: &Config,
     thumbnail_type: &ThumbnailType,
 ) -> Result<Option<PathBuf>> {
-    // No need to create a large thumbnail if the group doesn't have its own page.
     match thumbnail_type {
+        // No need to create a large thumbnail if the group doesn't have its own page.
         ThumbnailType::Large if group.markdown_file.is_none() => return Ok(None),
-        _default => (),
-    };
-    Ok(none_if_exists(thumbnail_path(
-        group,
-        image,
-        config,
-        thumbnail_type,
-    )?))
+        _default => Ok(none_if_exists(thumbnail_path(
+            group,
+            image,
+            config,
+            thumbnail_type,
+        )?)),
+    }
 }
 
 fn render_image(image: &Image, group: &ImageGroup, config: &Config) -> Result<ImageFile> {
@@ -128,8 +125,8 @@ impl ImageFile {
         let result = process::Command::new("convert")
             .arg(&self.source_path)
             .args(&[
-                "-resize", dimensions, "-gravity", "center", "-crop", crop, "+repage",
-                "-quality", "80",
+                "-resize", dimensions, "-gravity", "center", "-crop", crop, "+repage", "-quality",
+                "80",
             ])
             .arg(thumbnail_path)
             .output()

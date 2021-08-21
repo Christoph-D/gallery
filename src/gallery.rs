@@ -1,6 +1,6 @@
 use chrono::naive::NaiveDate;
-use std::path::PathBuf;
 use std::fmt;
+use std::path::PathBuf;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Image {
