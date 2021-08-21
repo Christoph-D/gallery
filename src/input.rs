@@ -11,7 +11,7 @@ pub fn gallery_from_dir(path: &Path) -> Result<Gallery> {
     let mut image_groups = Vec::<ImageGroup>::new();
     for d in read_dir(path)?.iter().filter(|d| d.is_dir) {
         let contents = read_dir(&d.path)?;
-        if let Some(group) = ImageGroup::from_entries(&d.filename, &contents)? {
+        if let Some(group) = ImageGroup::from_entries(&d.file_name, &contents)? {
             image_groups.push(group);
         }
     }
@@ -23,24 +23,24 @@ impl Image {
     fn from(d: &DirEntry) -> Result<Image> {
         Ok(Image {
             name: String::from(
-                d.filename
+                d.file_name
                     .file_stem()
                     .ok_or_else(|| {
                         anyhow!(
                             "Could not determine file stem: {}",
-                            d.filename.to_string_lossy()
+                            d.file_name.to_string_lossy()
                         )
                     })?
                     .to_str()
                     .ok_or_else(|| {
                         anyhow!(
                             "Could not convert file name to UTF-8: {}",
-                            d.filename.to_string_lossy()
+                            d.file_name.to_string_lossy()
                         )
                     })?,
             ),
             path: d.path.clone(),
-            file_name: d.filename.clone(),
+            file_name: d.file_name.clone(),
         })
     }
 }
@@ -90,7 +90,7 @@ impl ImageGroup {
 #[derive(Debug)]
 struct DirEntry {
     path: PathBuf,
-    filename: PathBuf, // relative to the base dir
+    file_name: PathBuf, // relative to the base dir
     is_dir: bool,
 }
 
@@ -121,7 +121,7 @@ fn read_dir(base_dir: &Path) -> Result<Vec<DirEntry>> {
         let d = path.with_context(|| format!("Failed to read the contents of directory: {}", p))?;
         let path = d.path();
         res.push(DirEntry {
-            filename: PathBuf::from(path.strip_prefix(base_dir).map_err(Error::msg)?),
+            file_name: PathBuf::from(path.strip_prefix(base_dir).map_err(Error::msg)?),
             is_dir: d
                 .metadata()
                 .with_context(|| format!("Could not read metadata: {}", path.to_string_lossy()))?
@@ -138,12 +138,12 @@ mod tests {
     use chrono::naive::NaiveDate;
     use std::path::{Path, PathBuf};
 
-    fn dir(dirname: &str, filenames: &[(&str, bool)]) -> Vec<DirEntry> {
-        filenames
+    fn dir(dirname: &str, file_names: &[(&str, bool)]) -> Vec<DirEntry> {
+        file_names
             .iter()
             .map(|(p, is_dir)| DirEntry {
                 path: [dirname, p].iter().collect(),
-                filename: PathBuf::from(p),
+                file_name: PathBuf::from(p),
                 is_dir: *is_dir,
             })
             .collect()
