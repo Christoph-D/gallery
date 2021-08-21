@@ -23,9 +23,12 @@ pub struct Config {
 pub fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
     let mut handlebars = Handlebars::new();
     handlebars.set_strict_mode(true);
-    handlebars.register_template_string("overview", include_str!("../templates/overview.handlebars"))?;
     handlebars
-        .register_template_string("image_group", include_str!("../templates/image_group.handlebars"))?;
+        .register_template_string("overview", include_str!("../templates/overview.handlebars"))?;
+    handlebars.register_template_string(
+        "image_group",
+        include_str!("../templates/image_group.handlebars"),
+    )?;
 
     html::render_overview_html(gallery, config, &handlebars)?.write(config)?;
     for i in &gallery.image_groups {

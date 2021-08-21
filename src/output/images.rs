@@ -79,7 +79,7 @@ fn check_thumbnail_path(
 ) -> Result<Option<PathBuf>> {
     match thumbnail_type {
         // No need to create a large thumbnail if the group doesn't have its own page.
-        ThumbnailType::Large if group.markdown_file.is_none() => return Ok(None),
+        ThumbnailType::Large if group.markdown_file.is_none() => Ok(None),
         _default => Ok(none_if_exists(thumbnail_path(
             group,
             image,
