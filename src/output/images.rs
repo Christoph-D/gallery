@@ -190,8 +190,10 @@ impl ImageFile {
             })?;
         if !result.status.success() {
             return Err(anyhow!(
-                "Failed to create thumbnail: \"{}\"",
-                self.source_path.to_string_lossy()
+                "Failed to create thumbnail: \"{}\"\nstderr:\n{}\n\nstdout:\n{}\n",
+                self.source_path.to_string_lossy(),
+                String::from_utf8_lossy(&result.stderr),
+                String::from_utf8_lossy(&result.stdout),
             ));
         }
         Ok(())
