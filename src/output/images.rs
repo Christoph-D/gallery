@@ -10,16 +10,32 @@ pub enum ThumbnailType {
     Large,
 }
 
-pub fn write_images(image_group: &ImageGroup, config: &Config) -> Result<()> {
-    use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-    image_group
-        .images
-        .par_iter()
-        .map(|img| render_image(&img, image_group, config).map(|rendered| rendered.write(config)))
-        .collect::<Result<Vec<_>>>()?;
-    Ok(())
+pub struct ImageGroupFiles {
+    images: Vec<ImageFile>,
 }
 
+impl ImageGroupFiles {
+    pub fn write(&self, config: &Config) -> Result<()> {
+        use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+        self.images
+            .par_iter()
+            .map(|img| img.write(config))
+            .collect::<Result<Vec<_>>>()?;
+        Ok(())
+    }
+}
+
+pub fn render_images(image_group: &ImageGroup, config: &Config) -> Result<ImageGroupFiles> {
+    Ok(ImageGroupFiles {
+        images: image_group
+            .images
+            .iter()
+            .map(|img| render_image(&img, image_group, config))
+            .collect::<Result<Vec<_>>>()?,
+    })
+}
+
+/// Returns the path to the thumbnail image relative to the output base directory.
 pub fn relative_thumbnail_path(
     group: &ImageGroup,
     image: &Image,
@@ -45,17 +61,6 @@ fn output_path(group: &ImageGroup, image: &Image, config: &Config) -> Result<Opt
     ))
 }
 
-fn thumbnail_path(
-    group: &ImageGroup,
-    image: &Image,
-    config: &Config,
-    thumbnail_type: &ThumbnailType,
-) -> Result<PathBuf> {
-    Ok(config
-        .output_path
-        .join(relative_thumbnail_path(group, image, thumbnail_type)?))
-}
-
 fn none_if_exists(path: PathBuf) -> Option<PathBuf> {
     if path.exists() {
         None
@@ -71,7 +76,21 @@ struct ImageFile {
     thumbnail_path_large: Option<PathBuf>,
 }
 
-fn check_thumbnail_path(
+fn render_image(image: &Image, group: &ImageGroup, config: &Config) -> Result<ImageFile> {
+    Ok({
+        ImageFile {
+            source_path: image.path.clone(),
+            output_path: output_path(group, image, config)?,
+            thumbnail_path_small: thumbnail_path(group, image, config, &ThumbnailType::Small)?,
+            thumbnail_path_large: thumbnail_path(group, image, config, &ThumbnailType::Large)?,
+        }
+    })
+}
+
+/// Returns the full path to the thumbnail image if a thumbnail is needed.
+/// Return `None` if no thumbnail is needed for some reason, for example because
+/// the thumbnail already exists or because the thumbnail would be unused.
+fn thumbnail_path(
     group: &ImageGroup,
     image: &Image,
     config: &Config,
@@ -80,37 +99,53 @@ fn check_thumbnail_path(
     match thumbnail_type {
         // No need to create a large thumbnail if the group doesn't have its own page.
         ThumbnailType::Large if group.markdown_file.is_none() => Ok(None),
-        _default => Ok(none_if_exists(thumbnail_path(
-            group,
-            image,
-            config,
-            thumbnail_type,
-        )?)),
+        _default => {
+            Ok(none_if_exists(config.output_path.join(
+                relative_thumbnail_path(group, image, thumbnail_type)?,
+            )))
+        }
     }
 }
 
-fn render_image(image: &Image, group: &ImageGroup, config: &Config) -> Result<ImageFile> {
-    Ok({
-        ImageFile {
-            source_path: image.path.clone(),
-            output_path: output_path(group, image, config)?,
-            thumbnail_path_small: check_thumbnail_path(
-                group,
-                image,
-                config,
-                &ThumbnailType::Small,
-            )?,
-            thumbnail_path_large: check_thumbnail_path(
-                group,
-                image,
-                config,
-                &ThumbnailType::Large,
-            )?,
-        }
-    })
-}
-
 impl ImageFile {
+    fn write(&self, config: &Config) -> Result<()> {
+        self.write_image(config)?;
+        self.write_thumbnails(config)
+    }
+
+    fn write_image(&self, config: &Config) -> Result<()> {
+        let output_path = match &self.output_path {
+            Some(p) => p,
+            None => return Ok(()),
+        };
+        match &config.run_mode {
+            RunMode::Normal => {
+                create_parent_directories(output_path)?;
+                fs::copy(&self.source_path, output_path).with_context(|| {
+                    format!(
+                        "Failed to copy image \"{}\" -> \"{}\"",
+                        self.source_path.to_string_lossy(),
+                        output_path.to_string_lossy()
+                    )
+                })?;
+            }
+            RunMode::DryRun => {
+                println!("Image: \"{}\"", output_path.to_string_lossy());
+            }
+        }
+        Ok(())
+    }
+
+    fn write_thumbnails(&self, config: &Config) -> Result<()> {
+        match &config.run_mode {
+            RunMode::Normal => {
+                self.write_thumbnail(&self.thumbnail_path_small, "400x", "400x267+0+0")?;
+                self.write_thumbnail(&self.thumbnail_path_large, "2000x", "2000x1335+0+0")
+            }
+            RunMode::DryRun => Ok(()), // Thumbnails are silent in dry-run mode.
+        }
+    }
+
     fn write_thumbnail(
         &self,
         thumbnail_path: &Option<PathBuf>,
@@ -143,43 +178,5 @@ impl ImageFile {
             ));
         }
         Ok(())
-    }
-
-    fn write_thumbnails(&self, config: &Config) -> Result<()> {
-        match &config.run_mode {
-            RunMode::Normal => {
-                self.write_thumbnail(&self.thumbnail_path_small, "400x", "400x267+0+0")?;
-                self.write_thumbnail(&self.thumbnail_path_large, "2000x", "2000x1335+0+0")
-            }
-            RunMode::DryRun => Ok(()), // Thumbnails are silent in dry-run mode.
-        }
-    }
-
-    fn write_image(&self, config: &Config) -> Result<()> {
-        let output_path = match &self.output_path {
-            Some(p) => p,
-            None => return Ok(()),
-        };
-        match &config.run_mode {
-            RunMode::Normal => {
-                create_parent_directories(output_path)?;
-                fs::copy(&self.source_path, output_path).with_context(|| {
-                    format!(
-                        "Failed to copy image \"{}\" -> \"{}\"",
-                        self.source_path.to_string_lossy(),
-                        output_path.to_string_lossy()
-                    )
-                })?;
-            }
-            RunMode::DryRun => {
-                println!("Image: \"{}\"", output_path.to_string_lossy());
-            }
-        }
-        Ok(())
-    }
-
-    fn write(&self, config: &Config) -> Result<()> {
-        self.write_image(config)?;
-        self.write_thumbnails(config)
     }
 }

@@ -34,7 +34,7 @@ pub fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
     for i in &gallery.image_groups {
         html::render_image_group_html(&i, config, &handlebars)?
             .map_or(Ok(()), |f| f.write(config))?;
-        images::write_images(&i, config)?;
+        images::render_images(&i, config)?.write(config)?;
     }
     write_static(config)
 }
