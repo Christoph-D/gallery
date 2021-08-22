@@ -1,4 +1,4 @@
-//! This module writes the images and thumbnails that make up the gallery.
+//! Writes the images and thumbnails that make up the gallery.
 use crate::model::{Image, ImageGroup};
 
 use anyhow::{anyhow, Context, Result};

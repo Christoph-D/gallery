@@ -8,6 +8,9 @@ use anyhow::{Context, Result};
 use clap::{App, Arg};
 use std::path::PathBuf;
 
+/// Generates a photo gallery based on the provided commandline arguments.
+///
+/// To use the arguments provided by the system, pass in [`std::env::args_os()`].
 pub fn run_on_args<I, T>(args: I) -> Result<()>
 where
     I: IntoIterator<Item = T>,

@@ -1,4 +1,4 @@
-//! This module writes the gallery to the output directory.
+//! Writes the gallery to the output directory.
 //!
 //! Together with its submodules, this module writes everything including images, thumbnails, and HTML files.
 mod html;

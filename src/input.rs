@@ -1,4 +1,5 @@
-//! This module reads the source directory into the internal representation.
+//! Reads the source directory into the internal representation.
+//!
 //! This is a read-only operation.
 use crate::model::{Gallery, Image, ImageGroup};
 

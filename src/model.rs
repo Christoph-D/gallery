@@ -1,4 +1,4 @@
-//! This module defines data structures to represent image galleries throughput the program.
+//! Data structures to represent image galleries throughput the program.
 use chrono::naive::NaiveDate;
 use std::fmt;
 use std::path::PathBuf;

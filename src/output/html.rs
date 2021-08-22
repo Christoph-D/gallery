@@ -1,4 +1,4 @@
-//! This module writes the HTML pages that make up the gallery.
+//! Writes the HTML pages that make up the gallery.
 //!
 //! Currently, this is
 //! * an overview page showing all the images,
