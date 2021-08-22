@@ -2,21 +2,28 @@
 //!
 //! The tests here require imagemagick (the `convert` binary) to be in the `PATH`
 //! or the tests will fail when trying to generate thumbnails.
-use std::{fs, path::Path};
+use std::{fs, path::Path, process::Command};
 
 /// A valid 1-pixel sized webp image.
 /// The image needs to be valid to test the generation of thumbnails.
 const DUMMY_WEBP: &[u8] = include_bytes!("dummy.webp");
 
 fn run_main(inputdir: &Path, outputdir: &Path, page_title: &str, footer: &str) {
-    if let Err(e) = gallery::run_on_args([
-        "gallery", // name of the binary, doesn't matter
-        &("--page_title=".to_owned() + page_title),
-        &("--footer=".to_owned() + footer),
-        &("--input=".to_owned() + inputdir.to_str().unwrap()),
-        &("--output=".to_owned() + outputdir.to_str().unwrap()),
-    ]) {
-        panic!("Error: {:?}", e)
+    let output = Command::new(env!("CARGO_BIN_EXE_gallery"))
+        .args([
+            &("--page_title=".to_owned() + page_title),
+            &("--footer=".to_owned() + footer),
+            &("--input=".to_owned() + inputdir.to_str().unwrap()),
+            &("--output=".to_owned() + outputdir.to_str().unwrap()),
+        ])
+        .output()
+        .expect("Failed to run main");
+    if !output.status.success() {
+        panic!(
+            "Error:\nstderr:\n{}\n\nstdout:\n{}\n",
+            String::from_utf8_lossy(&output.stderr),
+            String::from_utf8_lossy(&output.stdout)
+        );
     }
 }
 

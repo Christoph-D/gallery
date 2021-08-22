@@ -1,5 +1,4 @@
 //! A static site generator for photo galleries.
-
 mod input;
 mod model;
 mod output;
@@ -11,7 +10,7 @@ use std::path::PathBuf;
 /// Generates a photo gallery based on the provided commandline arguments.
 ///
 /// To use the arguments provided by the system, pass in [`std::env::args_os()`].
-pub fn run_on_args<I, T>(args: I) -> Result<()>
+fn run_on_args<I, T>(args: I) -> Result<()>
 where
     I: IntoIterator<Item = T>,
     T: Into<std::ffi::OsString> + Clone,
@@ -68,4 +67,10 @@ where
         },
     )
     .with_context(|| "Failed to write gallery")
+}
+
+fn main() {
+    if let Err(e) = run_on_args(std::env::args_os()) {
+        println!("Error: {:?}", e);
+    }
 }
