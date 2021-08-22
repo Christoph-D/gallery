@@ -2,6 +2,11 @@
 name = "gallery"
 version = "0.1.0"
 edition = "2018"
+description = "A static site generator for photo galleries"
+keywords = ["static-site-generator", "photos", "gallery"]
+categories = ["command-line-utilities", "template-engine"]
+license = "MIT"
+repository = "https://github.com/Christoph-D/gallery"
 
 [dependencies]
 anyhow = "1.0.42"
