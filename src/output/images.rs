@@ -54,7 +54,9 @@ pub fn relative_thumbnail_path(
     image: &Image,
     thumbnail_type: &ThumbnailType,
 ) -> Result<PathBuf> {
-    let suffix = to_web_path(&group.path)?.join(to_web_path(&image.file_name)?);
+    let mut suffix = to_web_path(&group.path)?.join(to_web_path(&image.file_name)?);
+    // Always use webp for thumbnails to get a reasonable quality.
+    suffix.set_extension("webp");
     let size = match thumbnail_type {
         ThumbnailType::Small => "small",
         ThumbnailType::Large => "large",
@@ -197,5 +199,67 @@ impl ImageFile {
             ));
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{relative_thumbnail_path, Image, ImageGroup, ThumbnailType};
+    use chrono::naive::NaiveDate;
+    use std::path::PathBuf;
+
+    fn new_image_group(group_path: &str, image_path: &str) -> ImageGroup {
+        let image_path = PathBuf::from(image_path);
+        ImageGroup {
+            path: PathBuf::from(group_path),
+            title: "ignored".to_owned(),
+            date: NaiveDate::from_ymd(2021, 01, 01),
+            images: vec![Image {
+                name: "ignored".to_owned(),
+                path: image_path.clone(),
+                file_name: PathBuf::from(image_path.file_name().unwrap()),
+            }],
+            markdown_file: None,
+        }
+    }
+
+    #[test]
+    fn thumbnail_path_simple() {
+        let group = new_image_group(
+            "2021-01-01 Some group",
+            "/some/path/2021-01-01 Some group/Some file.webp",
+        );
+        let image = group.images.get(0).unwrap();
+        assert_eq!(
+            relative_thumbnail_path(&group, image, &ThumbnailType::Small).unwrap(),
+            PathBuf::from("thumbnails/small/2021-01-01-some-group/some-file.webp")
+        );
+    }
+
+    #[test]
+    fn thumbnail_path_jpeg() {
+        let group = new_image_group(
+            "2021-01-01 Some group",
+            "/some/path/input/2021-01-01 Some group/Some file.jpeg",
+        );
+        let image = group.images.get(0).unwrap();
+        assert_eq!(
+            relative_thumbnail_path(&group, image, &ThumbnailType::Small).unwrap(),
+            // The thumbnail should be webp even for jpeg source files.
+            PathBuf::from("thumbnails/small/2021-01-01-some-group/some-file.webp")
+        );
+    }
+
+    #[test]
+    fn thumbnail_path_large() {
+        let group = new_image_group(
+            "2021-01-01 Some group",
+            "/some/path/2021-01-01 Some group/Some file.webp",
+        );
+        let image = group.images.get(0).unwrap();
+        assert_eq!(
+            relative_thumbnail_path(&group, image, &ThumbnailType::Large).unwrap(),
+            PathBuf::from("thumbnails/large/2021-01-01-some-group/some-file.webp")
+        );
     }
 }
