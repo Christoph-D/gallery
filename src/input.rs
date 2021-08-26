@@ -1,9 +1,10 @@
 //! Reads the source directory into the internal representation.
 //!
 //! This is a read-only operation.
+use crate::error::PathErrorContext;
 use crate::model::{Gallery, Image, ImageGroup};
 
-use anyhow::{anyhow, Context, Error, Result};
+use anyhow::{Error, Result};
 use chrono::naive::NaiveDate;
 use regex::Regex;
 use std::path::{Path, PathBuf};
@@ -28,19 +29,9 @@ impl Image {
             name: String::from(
                 d.file_name
                     .file_stem()
-                    .ok_or_else(|| {
-                        anyhow!(
-                            "Could not determine file stem: {}",
-                            d.file_name.to_string_lossy()
-                        )
-                    })?
+                    .path_context("Could not determine file stem", &d.file_name)?
                     .to_str()
-                    .ok_or_else(|| {
-                        anyhow!(
-                            "Could not convert file name to UTF-8: {}",
-                            d.file_name.to_string_lossy()
-                        )
-                    })?,
+                    .path_context("Could not convert file name to UTF-8", &d.file_name)?,
             ),
             path: d.path.clone(),
             file_name: d.file_name.clone(),
@@ -116,17 +107,14 @@ impl fmt::Display for DirEntry {
 // Reads a directory non-recursively.
 fn read_dir(base_dir: &Path) -> Result<Vec<DirEntry>> {
     let mut res = Vec::new();
-    let p = base_dir.to_string_lossy();
-    for path in
-        fs::read_dir(base_dir).with_context(|| format!("Failed to open directory: {}", p))?
-    {
-        let d = path.with_context(|| format!("Failed to read the contents of directory: {}", p))?;
+    for path in fs::read_dir(base_dir).path_context("Failed to open directory", base_dir)? {
+        let d = path.path_context("Failed to read the contents of directory", base_dir)?;
         let path = d.path();
         res.push(DirEntry {
             file_name: PathBuf::from(path.strip_prefix(base_dir).map_err(Error::msg)?),
             is_dir: d
                 .metadata()
-                .with_context(|| format!("Could not read metadata: {}", path.to_string_lossy()))?
+                .path_context("Could not read metadata", &path)?
                 .is_dir(),
             path,
         })

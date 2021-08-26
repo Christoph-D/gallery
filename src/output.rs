@@ -4,9 +4,10 @@
 mod html;
 mod images;
 
+use crate::error::{path_error, PathErrorContext};
 use crate::model::Gallery;
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::Result;
 use handlebars::Handlebars;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -68,9 +69,7 @@ fn write_static(config: &Config) -> Result<()> {
         match config.run_mode {
             RunMode::Normal => {
                 create_parent_directories(path)?;
-                fs::write(path, content).with_context(|| {
-                    format!("Failed to write asset: \"{}\"", css_path.to_string_lossy())
-                })?;
+                fs::write(path, content).path_context("Failed to write asset", &css_path)?;
             }
             RunMode::DryRun => {
                 println!("Static: \"{}\"", path.to_string_lossy());
@@ -86,30 +85,23 @@ fn write_static(config: &Config) -> Result<()> {
 /// * This function skips the last element of the path, assuming it's a file name.
 /// * This function returns more descriptive errors of the right type.
 fn create_parent_directories(path: &Path) -> Result<()> {
-    let dir = path.parent().ok_or_else(|| {
-        anyhow!(
-            "Could not determine parent directory of \"{}\"",
-            path.to_string_lossy()
-        )
-    })?;
-    fs::create_dir_all(dir)
-        .with_context(|| format!("Failed to create directory \"{}\"", dir.to_string_lossy()))
+    let dir = path
+        .parent()
+        .path_context("Could not determine parent directory", &path)?;
+    fs::create_dir_all(dir).path_context("Failed to create directory", &dir)
 }
 
 /// Converts a single-element path into something suitable for a URL.
 fn to_web_path(path: &Path) -> Result<PathBuf> {
     if path.components().count() != 1 {
-        return Err(anyhow!(
-            "Cannot convert multi-component paths into URLs: {}",
-            path.to_string_lossy()
+        return Err(path_error(
+            "Cannot convert multi-component paths into URLs",
+            &path,
         ));
     }
-    let p = path.to_str().ok_or_else(|| {
-        anyhow!(
-            "Failed to convert path to UTF-8: \"{}\"",
-            path.to_string_lossy()
-        )
-    })?;
+    let p = path
+        .to_str()
+        .path_context("Failed to convert path to UTF-8", &path)?;
     // Keep the file extension intact if one is present.
     match p.rsplit_once('.') {
         Some((path, ext)) => Ok(PathBuf::from(slug::slugify(path) + "." + ext)),

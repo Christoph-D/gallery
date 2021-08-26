@@ -3,9 +3,10 @@
 //! Currently, this is
 //! * an overview page showing all the images,
 //! * one page per image group for image groups with markdown files.
+use crate::error::PathErrorContext;
 use crate::model::{Gallery, Image, ImageGroup};
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result};
 use serde::Serialize;
 use std::{fs, path::PathBuf};
 
@@ -23,12 +24,8 @@ impl HTMLFile {
         match &config.run_mode {
             RunMode::Normal => {
                 create_parent_directories(&self.output_path)?;
-                fs::write(&self.output_path, &self.content).with_context(|| {
-                    format!(
-                        "Failed to write HTML file: \"{}\"",
-                        self.output_path.to_string_lossy()
-                    )
-                })
+                fs::write(&self.output_path, &self.content)
+                    .path_context("Failed to write HTML file", &self.output_path)
             }
             RunMode::DryRun => {
                 println!("HTML:  \"{}\"", self.output_path.to_string_lossy());
@@ -162,12 +159,7 @@ impl ImageData {
             name: image
                 .file_name
                 .file_stem()
-                .ok_or_else(|| {
-                    anyhow!(
-                        "Failed to remove file extension: \"{}\"",
-                        image.file_name.to_string_lossy()
-                    )
-                })?
+                .path_context("Failed to remove file extension", &image.file_name)?
                 .to_string_lossy()
                 .to_string(),
             thumbnail: images::relative_thumbnail_path(image_group, image, thumbnail_type)?

@@ -1,4 +1,5 @@
 //! A static site generator for photo galleries.
+mod error;
 mod input;
 mod model;
 mod output;

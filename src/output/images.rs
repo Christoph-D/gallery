@@ -1,7 +1,8 @@
 //! Writes the images and thumbnails that make up the gallery.
+use crate::error::PathErrorContext;
 use crate::model::{Image, ImageGroup};
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{anyhow, Result};
 use std::{fs, path::PathBuf, process};
 
 use super::{create_parent_directories, to_web_path, Config, RunMode};
@@ -140,13 +141,13 @@ impl ImageFile {
         match &config.run_mode {
             RunMode::Normal => {
                 create_parent_directories(output_path)?;
-                fs::copy(&self.source_path, output_path).with_context(|| {
-                    format!(
-                        "Failed to copy image \"{}\" -> \"{}\"",
-                        self.source_path.to_string_lossy(),
+                fs::copy(&self.source_path, output_path).path_context(
+                    &format!(
+                        "Failed to copy image to \"{}\"",
                         output_path.to_string_lossy()
-                    )
-                })?;
+                    ),
+                    &self.source_path,
+                )?;
             }
             RunMode::DryRun => {
                 println!("Image: \"{}\"", output_path.to_string_lossy());
@@ -184,12 +185,7 @@ impl ImageFile {
             ])
             .arg(thumbnail_path)
             .output()
-            .with_context(|| {
-                format!(
-                    "Failed to run imagemagick 'convert': \"{}\"",
-                    self.source_path.to_string_lossy()
-                )
-            })?;
+            .path_context("Failed to run imagemagick 'convert'", &self.source_path)?;
         if !result.status.success() {
             return Err(anyhow!(
                 "Failed to create thumbnail: \"{}\"\nstderr:\n{}\n\nstdout:\n{}\n",
