@@ -69,7 +69,7 @@ fn write_static(config: &Config) -> Result<()> {
         match config.run_mode {
             RunMode::Normal => {
                 create_parent_directories(path)?;
-                fs::write(path, content).path_context("Failed to write asset", &css_path)?;
+                fs::write(path, content).path_context("Failed to write asset", &path)?;
             }
             RunMode::DryRun => {
                 println!("Static: \"{}\"", path.to_string_lossy());
