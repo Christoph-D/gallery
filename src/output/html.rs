@@ -3,16 +3,15 @@
 //! Currently, this is
 //! * an overview page showing all the images,
 //! * one page per image group for image groups with markdown files.
-use super::Item;
+use super::{create_parent_directories, Config, Item, RunMode};
+
 use crate::error::PathErrorContext;
-use crate::model::{Gallery, Image, ImageGroup};
+use crate::model::{Gallery, Image, ImageGroup, ThumbnailType};
 
 use anyhow::{Context, Result};
 use handlebars::Handlebars;
 use serde::Serialize;
 use std::{fs, path::PathBuf};
-
-use super::{create_parent_directories, images, to_web_path, Config, RunMode};
 
 pub(super) struct Templates<'a>(Handlebars<'a>);
 
@@ -42,9 +41,7 @@ pub(super) fn render_overview_html(
         image_groups: gallery
             .image_groups
             .iter()
-            .map(|group| {
-                ImageGroupData::from_image_group(config, group, &images::ThumbnailType::Small)
-            })
+            .map(|group| ImageGroupData::from_image_group(config, group, &ThumbnailType::Small))
             .collect::<Result<Vec<_>>>()?,
     };
     Ok(Box::new(HTMLFile {
@@ -65,8 +62,7 @@ pub(super) fn render_image_group_html(
     if image_group.markdown_file.is_none() {
         return Ok(None);
     }
-    let data =
-        ImageGroupData::from_image_group(config, image_group, &images::ThumbnailType::Large)?;
+    let data = ImageGroupData::from_image_group(config, image_group, &ThumbnailType::Large)?;
     Ok(Some(Box::new(HTMLFile {
         content: templates.0.render("image_group", &data).with_context(|| {
             format!(
@@ -76,7 +72,7 @@ pub(super) fn render_image_group_html(
         })?,
         output_path: config
             .output_path
-            .join(to_web_path(&image_group.path)?)
+            .join(image_group.url()?)
             .join("index.html"),
     })))
 }
@@ -136,7 +132,7 @@ impl ImageGroupData {
     fn from_image_group(
         config: &Config,
         image_group: &ImageGroup,
-        thumbnail_type: &images::ThumbnailType,
+        thumbnail_type: &ThumbnailType,
     ) -> Result<ImageGroupData> {
         // Suppress the title if it's redundant.
         let title = if image_group.images.len() == 1
@@ -156,7 +152,8 @@ impl ImageGroupData {
                 .iter()
                 .map(|image| ImageData::from_image(image, image_group, thumbnail_type))
                 .collect::<Result<Vec<_>>>()?,
-            url: slug::slugify(image_group.path.to_string_lossy()),
+            // to_string_lossy is safe because URLs are guaranteed to be ASCII.
+            url: image_group.url()?.to_string_lossy().into_owned(),
         })
     }
 }
@@ -165,19 +162,16 @@ impl ImageData {
     fn from_image(
         image: &Image,
         image_group: &ImageGroup,
-        thumbnail_type: &images::ThumbnailType,
+        thumbnail_type: &ThumbnailType,
     ) -> Result<ImageData> {
         Ok(ImageData {
-            file_name: to_web_path(&image.file_name)?.to_string_lossy().to_string(),
-            name: image
-                .file_name
-                .file_stem()
-                .path_context("Failed to remove file extension", &image.file_name)?
+            // to_string_lossy is safe because URLs are guaranteed to be ASCII.
+            file_name: image.url_file_name()?.to_string_lossy().into_owned(),
+            name: image.name.clone(),
+            thumbnail: image
+                .thumbnail_url(image_group, thumbnail_type)?
                 .to_string_lossy()
-                .to_string(),
-            thumbnail: images::relative_thumbnail_path(image_group, image, thumbnail_type)?
-                .to_string_lossy()
-                .to_string(),
+                .into_owned(),
             anchor: slug::slugify(&image.name),
         })
     }

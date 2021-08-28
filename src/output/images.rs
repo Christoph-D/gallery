@@ -1,21 +1,13 @@
 //! Writes the images and thumbnails that make up the gallery.
+use super::Item;
+use super::{create_parent_directories, Config, RunMode};
+
 use crate::error::PathErrorContext;
-use crate::model::{Image, ImageGroup};
+use crate::model::{Image, ImageGroup, ThumbnailType};
 
 use anyhow::{anyhow, Result};
 use std::path::{Path, PathBuf};
 use std::{fs, process};
-
-use super::Item;
-use super::{create_parent_directories, to_web_path, Config, RunMode};
-
-/// Different thumbnail types for different use cases.
-///
-/// The overview page uses small thumbnails, the image group pages use large thumbnails.
-pub(super) enum ThumbnailType {
-    Small,
-    Large,
-}
 
 /// Prepares an image group for writing.
 pub(super) fn render_images(
@@ -29,38 +21,13 @@ pub(super) fn render_images(
     Ok(res)
 }
 
-/// Returns the path to the thumbnail image relative to the output base directory.
-pub(super) fn relative_thumbnail_path(
-    group: &ImageGroup,
-    image: &Image,
-    thumbnail_type: &ThumbnailType,
-) -> Result<PathBuf> {
-    let mut suffix = to_web_path(&group.path)?.join(to_web_path(&image.file_name)?);
-    // Always use webp for thumbnails to get a reasonable quality.
-    suffix.set_extension("webp");
-    let size = match thumbnail_type {
-        ThumbnailType::Small => "small",
-        ThumbnailType::Large => "large",
-    };
-    Ok(PathBuf::from("thumbnails").join(size).join(&suffix))
-}
-
-fn output_path(group: &ImageGroup, image: &Image, config: &Config) -> Result<PathBuf> {
-    Ok([
-        &config.output_path,
-        &to_web_path(&group.path)?,
-        &to_web_path(&image.file_name)?,
-    ]
-    .iter()
-    .collect())
-}
-
 /// A single image ready to be written to disk.
 struct ImageFile {
     input_path: PathBuf,
     output_path: PathBuf,
 }
 
+/// A single thumbnail ready to be written to disk.
 struct ThumbnailFile {
     input_path: PathBuf,
     output_path: PathBuf,
@@ -76,7 +43,7 @@ fn render_image(
 ) -> Result<Vec<Box<dyn Item + Send>>> {
     let mut res: Vec<Box<dyn Item + Send>> = vec![Box::new(ImageFile {
         input_path: image.path.clone(),
-        output_path: output_path(group, image, config)?,
+        output_path: config.output_path.join(image.url(group)?),
     })];
     for t in [ThumbnailType::Small, ThumbnailType::Large] {
         if let Some(p) = thumbnail_path(group, image, config, &t)? {
@@ -101,11 +68,11 @@ fn thumbnail_path(
     match thumbnail_type {
         // No need to create a large thumbnail if the group doesn't have its own page.
         ThumbnailType::Large if group.markdown_file.is_none() => Ok(None),
-        _default => Ok(Some(config.output_path.join(relative_thumbnail_path(
-            group,
-            image,
-            thumbnail_type,
-        )?))),
+        _default => Ok(Some(
+            config
+                .output_path
+                .join(image.thumbnail_url(group, thumbnail_type)?),
+        )),
     }
 }
 
@@ -180,67 +147,5 @@ impl ThumbnailFile {
             ));
         }
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{relative_thumbnail_path, Image, ImageGroup, ThumbnailType};
-    use chrono::naive::NaiveDate;
-    use std::path::PathBuf;
-
-    fn new_image_group(group_path: &str, image_path: &str) -> ImageGroup {
-        let image_path = PathBuf::from(image_path);
-        ImageGroup {
-            path: PathBuf::from(group_path),
-            title: "ignored".to_owned(),
-            date: NaiveDate::from_ymd(2021, 01, 01),
-            images: vec![Image {
-                name: "ignored".to_owned(),
-                path: image_path.clone(),
-                file_name: PathBuf::from(image_path.file_name().unwrap()),
-            }],
-            markdown_file: None,
-        }
-    }
-
-    #[test]
-    fn thumbnail_path_simple() {
-        let group = new_image_group(
-            "2021-01-01 Some group",
-            "/some/path/2021-01-01 Some group/Some file.webp",
-        );
-        let image = group.images.get(0).unwrap();
-        assert_eq!(
-            relative_thumbnail_path(&group, image, &ThumbnailType::Small).unwrap(),
-            PathBuf::from("thumbnails/small/2021-01-01-some-group/some-file.webp")
-        );
-    }
-
-    #[test]
-    fn thumbnail_path_jpeg() {
-        let group = new_image_group(
-            "2021-01-01 Some group",
-            "/some/path/input/2021-01-01 Some group/Some file.jpeg",
-        );
-        let image = group.images.get(0).unwrap();
-        assert_eq!(
-            relative_thumbnail_path(&group, image, &ThumbnailType::Small).unwrap(),
-            // The thumbnail should be webp even for jpeg source files.
-            PathBuf::from("thumbnails/small/2021-01-01-some-group/some-file.webp")
-        );
-    }
-
-    #[test]
-    fn thumbnail_path_large() {
-        let group = new_image_group(
-            "2021-01-01 Some group",
-            "/some/path/2021-01-01 Some group/Some file.webp",
-        );
-        let image = group.images.get(0).unwrap();
-        assert_eq!(
-            relative_thumbnail_path(&group, image, &ThumbnailType::Large).unwrap(),
-            PathBuf::from("thumbnails/large/2021-01-01-some-group/some-file.webp")
-        );
     }
 }

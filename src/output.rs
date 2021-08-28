@@ -4,7 +4,7 @@
 mod html;
 mod images;
 
-use crate::error::{path_error, PathErrorContext};
+use crate::error::PathErrorContext;
 use crate::model::Gallery;
 
 use anyhow::Result;
@@ -13,13 +13,13 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 /// Normal or dryrun (read-only) mode.
-pub enum RunMode {
+pub(crate) enum RunMode {
     Normal,
     DryRun,
 }
 
 /// Configuration options for the output module.
-pub struct Config {
+pub(crate) struct Config {
     /// The target directory where to write the gallery.
     pub output_path: PathBuf,
     /// Normal or dryrun (read-only) mode.
@@ -37,7 +37,7 @@ trait Item {
 }
 
 /// Writes the gallery to disk.
-pub fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
+pub(crate) fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
     let templates = html::make_templates()?;
 
     // Create work items.
@@ -98,62 +98,4 @@ fn create_parent_directories(path: &Path) -> Result<()> {
         .parent()
         .path_context("Could not determine parent directory", &path)?;
     fs::create_dir_all(dir).path_context("Failed to create directory", &dir)
-}
-
-/// Converts a single-element path into something suitable for a URL.
-fn to_web_path(path: &Path) -> Result<PathBuf> {
-    if path.components().count() != 1 {
-        return Err(path_error(
-            "Cannot convert multi-component paths into URLs",
-            &path,
-        ));
-    }
-    let p = path
-        .to_str()
-        .path_context("Failed to convert path to UTF-8", &path)?;
-    // Keep the file extension intact if one is present.
-    match p.rsplit_once('.') {
-        Some((path, ext)) => Ok(PathBuf::from(slug::slugify(path) + "." + ext)),
-        None => Ok(PathBuf::from(slug::slugify(p))),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::to_web_path;
-    use std::path::{Path, PathBuf};
-
-    #[test]
-    fn to_web_path_empty_is_error() {
-        assert!(to_web_path(Path::new("")).is_err());
-    }
-
-    #[test]
-    fn to_web_path_simple() {
-        assert_eq!(
-            to_web_path(Path::new("2021-12-01 Fuji, Japan")).unwrap(),
-            PathBuf::from("2021-12-01-fuji-japan")
-        );
-    }
-
-    #[test]
-    fn to_web_path_umlaut_is_removed() {
-        assert_eq!(
-            to_web_path(Path::new("2021-12-01 Zürich")).unwrap(),
-            PathBuf::from("2021-12-01-zurich")
-        );
-    }
-
-    #[test]
-    fn to_web_path_file_extension_remains_intact() {
-        assert_eq!(
-            to_web_path(Path::new("Fuji, Japan.webp")).unwrap(),
-            PathBuf::from("fuji-japan.webp")
-        );
-    }
-
-    #[test]
-    fn to_web_path_multi_component_is_error() {
-        assert!(to_web_path(Path::new("2021-12-01 Fuji, Japan/Summit.webp")).is_err());
-    }
 }

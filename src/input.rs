@@ -4,13 +4,13 @@
 use crate::error::PathErrorContext;
 use crate::model::{Gallery, Image, ImageGroup};
 
-use anyhow::{Error, Result};
+use anyhow::Result;
 use chrono::naive::NaiveDate;
 use regex::Regex;
 use std::path::{Path, PathBuf};
 use std::{fmt, fs, str::FromStr};
 
-pub fn gallery_from_dir(path: &Path) -> Result<Gallery> {
+pub(crate) fn gallery_from_dir(path: &Path) -> Result<Gallery> {
     let mut image_groups = Vec::<ImageGroup>::new();
     for d in read_dir(path)?.iter().filter(|d| d.is_dir) {
         let contents = read_dir(&d.path)?;
@@ -24,24 +24,14 @@ pub fn gallery_from_dir(path: &Path) -> Result<Gallery> {
 
 impl Image {
     fn from(d: &DirEntry) -> Result<Image> {
-        Ok(Image {
-            name: String::from(
-                d.file_name
-                    .file_stem()
-                    .path_context("Could not determine file stem", &d.file_name)?
-                    .to_str()
-                    .path_context("Could not convert file name to UTF-8", &d.file_name)?,
-            ),
-            path: d.path.clone(),
-            file_name: d.file_name.clone(),
-        })
+        Image::new(d.file_name.clone(), d.path.clone())
     }
 }
 
 impl ImageGroup {
     fn from_entries(path: &Path, v: &[DirEntry]) -> Result<Option<ImageGroup>> {
         let (title, date) = {
-            let id = String::from(path.to_string_lossy());
+            let id = path.to_str().unwrap_or("");
             let re = Regex::new(r"^(\d{4})-(\d{2})-(\d{2}).").unwrap();
             let c = {
                 match re.captures(&id) {
@@ -50,7 +40,7 @@ impl ImageGroup {
                 }
             };
             (
-                String::from(re.replace(&id, "")),
+                re.replace(&id, "").into_owned(),
                 NaiveDate::from_ymd(
                     FromStr::from_str(c.get(1).unwrap().as_str())?,
                     FromStr::from_str(c.get(2).unwrap().as_str())?,
@@ -110,10 +100,13 @@ fn read_dir(base_dir: &Path) -> Result<Vec<DirEntry>> {
         let d = path.path_context("Failed to read the contents of directory", base_dir)?;
         let path = d.path();
         res.push(DirEntry {
-            file_name: PathBuf::from(path.strip_prefix(base_dir).map_err(Error::msg)?),
+            file_name: path
+                .strip_prefix(base_dir)
+                .path_context("Failed to remove base directory prefix", &path)?
+                .to_owned(),
             is_dir: d
                 .metadata()
-                .path_context("Could not read metadata", &path)?
+                .path_context("Failed to read metadata", &path)?
                 .is_dir(),
             path,
         })
