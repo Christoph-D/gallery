@@ -183,3 +183,22 @@ fn url_to_string(url: &Path) -> Result<String> {
         .ok_or_else(|| path_error("Failed to decode UTF-8", url))?
         .join("/"))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::url_to_string;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_url() {
+        assert_eq!(url_to_string(&PathBuf::from("foo")).unwrap(), "foo");
+    }
+
+    #[test]
+    fn test_composite_url() {
+        assert_eq!(
+            url_to_string(&PathBuf::from("foo").join("bar")).unwrap(),
+            "foo/bar"
+        );
+    }
+}
