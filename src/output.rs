@@ -41,11 +41,14 @@ pub fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
     let templates = html::make_templates()?;
 
     // Create work items.
-    let mut items = vec![html::render_overview_html(gallery, config, &templates)?];
-    for i in &gallery.image_groups {
-        items.extend(html::render_image_group_html(&i, config, &templates)?);
-        items.extend(images::render_images(&i, config)?);
-    }
+    let items = {
+        let mut items = vec![html::render_overview_html(gallery, config, &templates)?];
+        for i in &gallery.image_groups {
+            items.extend(html::render_image_group_html(&i, config, &templates)?);
+            items.extend(images::render_images(&i, config)?);
+        }
+        items
+    };
 
     // Write items in parallel to maximize throughput.
     items
