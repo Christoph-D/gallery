@@ -8,8 +8,7 @@ use anyhow::{Error, Result};
 use chrono::naive::NaiveDate;
 use regex::Regex;
 use std::path::{Path, PathBuf};
-use std::str::FromStr;
-use std::{fmt, fs};
+use std::{fmt, fs, str::FromStr};
 
 pub fn gallery_from_dir(path: &Path) -> Result<Gallery> {
     let mut image_groups = Vec::<ImageGroup>::new();

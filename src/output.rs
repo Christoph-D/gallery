@@ -9,6 +9,7 @@ use crate::model::Gallery;
 
 use anyhow::Result;
 use handlebars::Handlebars;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -30,6 +31,12 @@ pub struct Config {
     pub page_footer: Option<String>,
 }
 
+/// A work item containing something to be written to disk.
+trait Item {
+    /// Writes the item to disk.
+    fn write(&self, config: &Config) -> Result<()>;
+}
+
 /// Writes the gallery to disk.
 pub fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
     let mut handlebars = Handlebars::new();
@@ -41,12 +48,24 @@ pub fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
         include_str!("../templates/image_group.handlebars"),
     )?;
 
-    html::render_overview_html(gallery, config, &handlebars)?.write(config)?;
+    let mut items: Vec<Box<dyn Item + Send>> = vec![Box::new(html::render_overview_html(
+        gallery,
+        config,
+        &handlebars,
+    )?)];
     for i in &gallery.image_groups {
-        html::render_image_group_html(&i, config, &handlebars)?
-            .map_or(Ok(()), |f| f.write(config))?;
-        images::render_images(&i, config)?.write(config)?;
+        if let Some(i) = html::render_image_group_html(&i, config, &handlebars)? {
+            items.push(Box::new(i));
+        };
+        items.extend(images::render_images(&i, config)?);
     }
+
+    // Write items in parallel to maximize throughput.
+    items
+        .into_par_iter()
+        .map(|item| item.write(config))
+        .collect::<Result<Vec<_>>>()?;
+
     write_static(config)
 }
 

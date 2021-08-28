@@ -3,6 +3,7 @@
 //! Currently, this is
 //! * an overview page showing all the images,
 //! * one page per image group for image groups with markdown files.
+use super::Item;
 use crate::error::PathErrorContext;
 use crate::model::{Gallery, Image, ImageGroup};
 
@@ -12,38 +13,12 @@ use std::{fs, path::PathBuf};
 
 use super::{create_parent_directories, images, to_web_path, Config, RunMode};
 
-/// An HTML file ready to be written to disk.
-pub struct HTMLFile {
-    content: String,
-    output_path: PathBuf,
-}
-
-impl HTMLFile {
-    /// Writes the HTML file to disk.
-    pub fn write(&self, config: &Config) -> Result<()> {
-        match &config.run_mode {
-            RunMode::Normal => {
-                create_parent_directories(&self.output_path)?;
-                fs::write(&self.output_path, &self.content)
-                    .path_context("Failed to write HTML file", &self.output_path)
-            }
-            RunMode::DryRun => {
-                println!("HTML:  \"{}\"", self.output_path.to_string_lossy());
-                Ok(())
-            }
-        }
-    }
-}
-
-/// Renders the overview page into an [`HTMLFile`].
-///
-/// This is a read-only operation.
-/// You need to call [`HTMLFile::write`] to actually write the file to disk.
-pub fn render_overview_html(
+/// Renders the overview page into an [`Item`].
+pub(super) fn render_overview_html(
     gallery: &Gallery,
     config: &Config,
     handlebars: &handlebars::Handlebars,
-) -> Result<HTMLFile> {
+) -> Result<impl Item> {
     let data = GalleryData {
         title: config.page_title.clone(),
         footer: config.page_footer.clone(),
@@ -63,15 +38,12 @@ pub fn render_overview_html(
     })
 }
 
-/// Renders an image group page into an [`HTMLFile`]. This may be [`None`] if no HTML is needed.
-///
-/// This is a read-only operation.
-/// You need to call [`HTMLFile::write`] to actually write the file to disk.
-pub fn render_image_group_html(
+/// Renders an image group page into an [`Item`]. This may be [`None`] if no HTML is needed.
+pub(super) fn render_image_group_html(
     image_group: &ImageGroup,
     config: &Config,
     handlebars: &handlebars::Handlebars,
-) -> Result<Option<HTMLFile>> {
+) -> Result<Option<impl Item>> {
     if image_group.markdown_file.is_none() {
         return Ok(None);
     }
@@ -89,6 +61,29 @@ pub fn render_image_group_html(
             .join(to_web_path(&image_group.path)?)
             .join("index.html"),
     }))
+}
+
+/// An HTML file ready to be written to disk.
+struct HTMLFile {
+    content: String,
+    output_path: PathBuf,
+}
+
+impl Item for HTMLFile {
+    /// Writes the HTML file to disk.
+    fn write(&self, config: &Config) -> Result<()> {
+        match &config.run_mode {
+            RunMode::Normal => {
+                create_parent_directories(&self.output_path)?;
+                fs::write(&self.output_path, &self.content)
+                    .path_context("Failed to write HTML file", &self.output_path)
+            }
+            RunMode::DryRun => {
+                println!("HTML:  \"{}\"", self.output_path.to_string_lossy());
+                Ok(())
+            }
+        }
+    }
 }
 
 /// Used in handlebars templates to describe a gallery.
