@@ -8,7 +8,6 @@ use crate::error::{path_error, PathErrorContext};
 use crate::model::Gallery;
 
 use anyhow::Result;
-use handlebars::Handlebars;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -39,24 +38,12 @@ trait Item {
 
 /// Writes the gallery to disk.
 pub fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
-    let mut handlebars = Handlebars::new();
-    handlebars.set_strict_mode(true);
-    handlebars
-        .register_template_string("overview", include_str!("../templates/overview.handlebars"))?;
-    handlebars.register_template_string(
-        "image_group",
-        include_str!("../templates/image_group.handlebars"),
-    )?;
+    let templates = html::make_templates()?;
 
-    let mut items: Vec<Box<dyn Item + Send>> = vec![Box::new(html::render_overview_html(
-        gallery,
-        config,
-        &handlebars,
-    )?)];
+    // Create work items.
+    let mut items = vec![html::render_overview_html(gallery, config, &templates)?];
     for i in &gallery.image_groups {
-        if let Some(i) = html::render_image_group_html(&i, config, &handlebars)? {
-            items.push(Box::new(i));
-        };
+        items.extend(html::render_image_group_html(&i, config, &templates)?);
         items.extend(images::render_images(&i, config)?);
     }
 

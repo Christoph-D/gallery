@@ -8,17 +8,34 @@ use crate::error::PathErrorContext;
 use crate::model::{Gallery, Image, ImageGroup};
 
 use anyhow::{Context, Result};
+use handlebars::Handlebars;
 use serde::Serialize;
 use std::{fs, path::PathBuf};
 
 use super::{create_parent_directories, images, to_web_path, Config, RunMode};
 
+pub(super) struct Templates<'a>(Handlebars<'a>);
+
+pub(super) fn make_templates<'a>() -> Result<Templates<'a>> {
+    let mut handlebars = Handlebars::new();
+    handlebars.set_strict_mode(true);
+    handlebars.register_template_string(
+        "overview",
+        include_str!("../../templates/overview.handlebars"),
+    )?;
+    handlebars.register_template_string(
+        "image_group",
+        include_str!("../../templates/image_group.handlebars"),
+    )?;
+    Ok(Templates(handlebars))
+}
+
 /// Renders the overview page into an [`Item`].
 pub(super) fn render_overview_html(
     gallery: &Gallery,
     config: &Config,
-    handlebars: &handlebars::Handlebars,
-) -> Result<impl Item> {
+    templates: &Templates,
+) -> Result<Box<dyn Item + Send>> {
     let data = GalleryData {
         title: config.page_title.clone(),
         footer: config.page_footer.clone(),
@@ -30,27 +47,28 @@ pub(super) fn render_overview_html(
             })
             .collect::<Result<Vec<_>>>()?,
     };
-    Ok(HTMLFile {
-        content: handlebars
+    Ok(Box::new(HTMLFile {
+        content: templates
+            .0
             .render("overview", &data)
             .with_context(|| "Failed to render overview HTML page")?,
         output_path: config.output_path.join("index.html"),
-    })
+    }))
 }
 
 /// Renders an image group page into an [`Item`]. This may be [`None`] if no HTML is needed.
 pub(super) fn render_image_group_html(
     image_group: &ImageGroup,
     config: &Config,
-    handlebars: &handlebars::Handlebars,
-) -> Result<Option<impl Item>> {
+    templates: &Templates,
+) -> Result<Option<Box<dyn Item + Send>>> {
     if image_group.markdown_file.is_none() {
         return Ok(None);
     }
     let data =
         ImageGroupData::from_image_group(config, image_group, &images::ThumbnailType::Large)?;
-    Ok(Some(HTMLFile {
-        content: handlebars.render("image_group", &data).with_context(|| {
+    Ok(Some(Box::new(HTMLFile {
+        content: templates.0.render("image_group", &data).with_context(|| {
             format!(
                 "Failed to render HTML page for image group \"{}\"",
                 image_group.title
@@ -60,7 +78,7 @@ pub(super) fn render_image_group_html(
             .output_path
             .join(to_web_path(&image_group.path)?)
             .join("index.html"),
-    }))
+    })))
 }
 
 /// An HTML file ready to be written to disk.
