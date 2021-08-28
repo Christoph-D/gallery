@@ -64,21 +64,18 @@ impl Image {
         })
     }
 
-    /// The URL to this image, relative to the base directory.
-    /// The return value is guaranteed to consist only of ASCII characters.
+    /// The URL to this image relative to the base directory.
     pub(crate) fn url(&self, image_group: &ImageGroup) -> Result<PathBuf> {
         Ok(image_group.url()?.join(self.url_file_name()?))
     }
 
-    /// The URL to this image, relative to the location of the image.
-    /// That is, the returned URL contains no slashes.
-    /// The return value is guaranteed to consist only of ASCII characters.
+    /// The URL to this image relative to the location of the image.
+    /// That is, the returned path contains only one component.
     pub(crate) fn url_file_name(&self) -> Result<PathBuf> {
         to_web_path(&self.file_name)
     }
 
     /// The URL to the thumbnail image relative to the output base directory.
-    /// The return value is guaranteed to consist only of ASCII characters.
     pub(crate) fn thumbnail_url(
         &self,
         group: &ImageGroup,

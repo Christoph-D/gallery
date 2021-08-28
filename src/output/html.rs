@@ -5,13 +5,14 @@
 //! * one page per image group for image groups with markdown files.
 use super::{create_parent_directories, Config, Item, RunMode};
 
-use crate::error::PathErrorContext;
+use crate::error::{path_error, PathErrorContext};
 use crate::model::{Gallery, Image, ImageGroup, ThumbnailType};
 
 use anyhow::{Context, Result};
 use handlebars::Handlebars;
 use serde::Serialize;
-use std::{fs, path::PathBuf};
+use std::fs;
+use std::path::{Path, PathBuf};
 
 pub(super) struct Templates<'a>(Handlebars<'a>);
 
@@ -152,8 +153,7 @@ impl ImageGroupData {
                 .iter()
                 .map(|image| ImageData::from_image(image, image_group, thumbnail_type))
                 .collect::<Result<Vec<_>>>()?,
-            // to_string_lossy is safe because URLs are guaranteed to be ASCII.
-            url: image_group.url()?.to_string_lossy().into_owned(),
+            url: url_to_string(&image_group.url()?)?,
         })
     }
 }
@@ -165,14 +165,21 @@ impl ImageData {
         thumbnail_type: &ThumbnailType,
     ) -> Result<ImageData> {
         Ok(ImageData {
-            // to_string_lossy is safe because URLs are guaranteed to be ASCII.
-            file_name: image.url_file_name()?.to_string_lossy().into_owned(),
+            file_name: url_to_string(&image.url_file_name()?)?,
             name: image.name.clone(),
-            thumbnail: image
-                .thumbnail_url(image_group, thumbnail_type)?
-                .to_string_lossy()
-                .into_owned(),
+            thumbnail: url_to_string(&image.thumbnail_url(image_group, thumbnail_type)?)?,
             anchor: slug::slugify(&image.name),
         })
     }
+}
+
+/// Converts a URL from path form into a string.
+/// The path components will be joined by slashes.
+fn url_to_string(url: &Path) -> Result<String> {
+    Ok(url
+        .iter()
+        .map(|c| c.to_str())
+        .collect::<Option<Vec<_>>>()
+        .ok_or_else(|| path_error("Failed to decode UTF-8", url))?
+        .join("/"))
 }
