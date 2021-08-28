@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# This is a git pre-commit hook.
+#
+# To enable it, please link this file into .git/hooks/ by running
+# the following command from the project root:
+#
+# ln -s ../../.git.pre-commit .git/hooks/pre-commit
+
+# Ignore the orphaned "site" branch because it contains no Rust code.
+if [[ $(git rev-parse --abbrev-ref HEAD) == site ]]; then
+    exit 0
+fi
+
+out=$(cargo fmt --all -- --check 2>&1)
+if [[ $? -ne 0 ]]; then
+    printf '`cargo fmt` found issues:\n\n%s\n' "$out"
+    exit 1
+fi
+
+out=$(cargo clippy --all -- -D warnings 2>&1)
+if [[ $? -ne 0 ]]; then
+    printf '`cargo clippy` found issues:\n\n%s\n' "$out"
+    exit 1
+fi
+
+exit 0
