@@ -74,17 +74,9 @@ impl<'a, 'g, 'e, I: Iterator<Item = Event<'e>>> Iterator for ImageGroupMarkdownI
     type Item = Event<'e>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let event = match self.iter.next() {
-            Some(ev) => ev,
-            None => return None,
-        };
-
-        match self.map_image_event(&event) {
-            // None means the original event should be returned.
-            None => Some(event),
-
-            // The event was replaced with something else, use it.
-            Some(e) => Some(e),
+        match self.iter.next() {
+            Some(event) => self.map_image_event(&event).or(Some(event)),
+            None => None,
         }
     }
 }
