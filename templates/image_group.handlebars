@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/style.css" rel="stylesheet">
     <title>{{title}}</title>
   </head>
   <body>
@@ -19,19 +20,7 @@
 
       <div class="album py-5 bg-light">
         <div class="container">
-          <div class="row g-3">
-            {{#each images}}
-            <div class="card shadow-sm" id="{{ anchor }}">
-              <a href="{{file_name}}"><img class="card-img-top" src="../{{thumbnail}}"></a>
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                  <small class="text-muted">{{name}}</small>
-                  <small class="text-muted">{{../date}}</small>
-                </div>
-              </div>
-            </div>
-            {{/each}}
-          </div>
+          {{{markdown_content}}}
         </div>
       </div>
 

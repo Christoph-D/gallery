@@ -68,7 +68,7 @@ fn thumbnail_path(
     match thumbnail_type {
         // No need to create a large thumbnail if the group doesn't have its own page.
         ThumbnailType::Large if group.markdown_file.is_none() => Ok(None),
-        _default => Ok(Some(
+        _ => Ok(Some(
             config
                 .output_path
                 .join(image.thumbnail_url(group, thumbnail_type)?),

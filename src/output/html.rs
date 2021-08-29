@@ -3,6 +3,8 @@
 //! Currently, this is
 //! * an overview page showing all the images,
 //! * one page per image group for image groups with markdown files.
+mod markdown;
+
 use super::{create_parent_directories, Config, Item, RunMode};
 
 use crate::error::{path_error, PathErrorContext};
@@ -143,7 +145,7 @@ impl ImageGroupData {
         } else {
             Some(image_group.title.clone())
         };
-        Ok(ImageGroupData {
+        let data = ImageGroupData {
             title,
             footer: config.page_footer.clone(),
             date: image_group.date.to_string(),
@@ -154,6 +156,15 @@ impl ImageGroupData {
                 .map(|image| ImageData::from_image(image, image_group, thumbnail_type))
                 .collect::<Result<Vec<_>>>()?,
             url: url_to_string(&image_group.url()?)?,
+        };
+        let markdown = image_group
+            .markdown_file
+            .as_ref()
+            .map(|p| markdown::to_html(&p, &data))
+            .transpose()?;
+        Ok(ImageGroupData {
+            markdown_content: markdown,
+            ..data
         })
     }
 }
