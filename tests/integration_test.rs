@@ -8,7 +8,13 @@ use std::{fs, path::Path, process::Command};
 /// The image needs to be valid to test the generation of thumbnails.
 const DUMMY_WEBP: &[u8] = include_bytes!("dummy.webp");
 
-fn run_main(inputdir: &Path, outputdir: &Path, page_title: &str, footer: &str) {
+fn run_main(
+    inputdir: &Path,
+    outputdir: &Path,
+    page_title: &str,
+    footer: &str,
+    extra_args: &[&str],
+) {
     let output = Command::new(env!("CARGO_BIN_EXE_gallery"))
         .args([
             &("--page_title=".to_owned() + page_title),
@@ -16,6 +22,7 @@ fn run_main(inputdir: &Path, outputdir: &Path, page_title: &str, footer: &str) {
             &("--input=".to_owned() + inputdir.to_str().unwrap()),
             &("--output=".to_owned() + outputdir.to_str().unwrap()),
         ])
+        .args(extra_args)
         .output()
         .expect("Failed to run main");
     if !output.status.success() {
@@ -36,7 +43,13 @@ fn test_empty_input() {
 
     fs::create_dir(tempdir.join("input")).unwrap();
 
-    run_main(inputdir, outputdir, "Some title", "Some footer <a>link</a>");
+    run_main(
+        inputdir,
+        outputdir,
+        "Some title",
+        "Some footer <a>link</a>",
+        &[],
+    );
 
     let index = fs::read_to_string(outputdir.join("index.html")).unwrap();
     assert!(index.contains("Some title"));
@@ -58,7 +71,7 @@ fn test_simple_input() {
     )
     .unwrap();
 
-    run_main(inputdir, outputdir, "Title", "Footer");
+    run_main(inputdir, outputdir, "Title", "Footer", &[]);
 
     // The overview page should reference the image.
     let index = fs::read_to_string(outputdir.join("index.html")).unwrap();
@@ -72,4 +85,27 @@ fn test_simple_input() {
     assert!(outputdir
         .join("thumbnails/small/2021-01-01-fuji-japan/summit.webp")
         .is_file());
+}
+
+#[test]
+fn test_dry_run_mode() {
+    let tempdir_raw = tempfile::tempdir().unwrap();
+    let tempdir = tempdir_raw.path();
+    let inputdir = &tempdir.join("input");
+    let outputdir = &tempdir.join("output");
+
+    fs::create_dir(inputdir).unwrap();
+    fs::create_dir(inputdir.join("2021-01-01 Fuji, Japan")).unwrap();
+    fs::write(
+        inputdir.join("2021-01-01 Fuji, Japan/Summit.webp"),
+        DUMMY_WEBP,
+    )
+    .unwrap();
+
+    run_main(inputdir, outputdir, "Title", "Footer", &["--dry_run"]);
+
+    assert!(
+        fs::read_dir(outputdir).is_err(),
+        "Created output directory in dry-run mode."
+    );
 }
