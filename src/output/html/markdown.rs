@@ -63,14 +63,14 @@ pub(super) fn to_html(input_file: &Path, image_group: &ImageGroupData) -> Result
     }
 }
 
-struct ImageGroupMarkdownIterator<'a, 'g, I> {
+struct ImageGroupMarkdownIterator<'a, I> {
     iter: I,
-    image_group: &'g ImageGroupData,
+    image_group: &'a ImageGroupData,
     images_seen: &'a mut HashSet<String>,
     images_unknown: &'a mut HashSet<String>,
 }
 
-impl<'a, 'g, 'e, I: Iterator<Item = Event<'e>>> Iterator for ImageGroupMarkdownIterator<'a, 'g, I> {
+impl<'a, 'e, I: Iterator<Item = Event<'e>>> Iterator for ImageGroupMarkdownIterator<'a, I> {
     type Item = Event<'e>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -81,7 +81,7 @@ impl<'a, 'g, 'e, I: Iterator<Item = Event<'e>>> Iterator for ImageGroupMarkdownI
     }
 }
 
-impl<'a, 'g, I> ImageGroupMarkdownIterator<'a, 'g, I> {
+impl<'a, I> ImageGroupMarkdownIterator<'a, I> {
     fn map_image_event<'e>(&mut self, item: &Event<'e>) -> Option<Event<'e>> {
         let text = match item {
             Event::Text(text) => text,
