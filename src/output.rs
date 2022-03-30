@@ -44,8 +44,8 @@ pub(crate) fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
     let items = {
         let mut items = vec![html::render_overview_html(gallery, config, &templates)?];
         for i in &gallery.image_groups {
-            items.extend(html::render_image_group_html(&i, config, &templates)?);
-            items.extend(images::render_images(&i, config)?);
+            items.extend(html::render_image_group_html(i, config, &templates)?);
+            items.extend(images::render_images(i, config)?);
         }
         items
     };
@@ -78,7 +78,7 @@ fn write_static(config: &Config) -> Result<()> {
         match config.run_mode {
             RunMode::Normal => {
                 create_parent_directories(path)?;
-                fs::write(path, content).path_context("Failed to write asset", &path)?;
+                fs::write(path, content).path_context("Failed to write asset", path)?;
             }
             RunMode::DryRun => {
                 println!("Static: \"{}\"", path.to_string_lossy());
@@ -96,6 +96,6 @@ fn write_static(config: &Config) -> Result<()> {
 fn create_parent_directories(path: &Path) -> Result<()> {
     let dir = path
         .parent()
-        .path_context("Could not determine parent directory", &path)?;
-    fs::create_dir_all(dir).path_context("Failed to create directory", &dir)
+        .path_context("Could not determine parent directory", path)?;
+    fs::create_dir_all(dir).path_context("Failed to create directory", dir)
 }

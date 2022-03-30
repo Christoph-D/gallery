@@ -16,7 +16,7 @@ pub(super) fn render_images(
 ) -> Result<Vec<Box<dyn Item + Send>>> {
     let mut res = Vec::new();
     for img in &image_group.images {
-        res.extend(render_image(&img, image_group, config)?);
+        res.extend(render_image(img, image_group, config)?);
     }
     Ok(res)
 }

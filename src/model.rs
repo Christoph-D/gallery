@@ -133,12 +133,12 @@ fn to_web_path(path: &Path) -> Result<PathBuf> {
     if path.components().count() != 1 {
         return Err(path_error(
             "Cannot convert multi-component paths into URLs",
-            &path,
+            path,
         ));
     }
     let p = path
         .to_str()
-        .path_context("Failed to convert path to UTF-8", &path)?;
+        .path_context("Failed to convert path to UTF-8", path)?;
     // Keep the file extension intact if one is present.
     match p.rsplit_once('.') {
         Some((path, ext)) => Ok(PathBuf::from(slug::slugify(path) + "." + ext)),

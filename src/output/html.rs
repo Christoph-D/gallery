@@ -160,7 +160,7 @@ impl ImageGroupData {
         let markdown = image_group
             .markdown_file
             .as_ref()
-            .map(|p| markdown::to_html(&p, &data))
+            .map(|p| markdown::to_html(p, &data))
             .transpose()?;
         Ok(ImageGroupData {
             markdown_content: markdown,

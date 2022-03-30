@@ -34,13 +34,13 @@ impl ImageGroup {
             let id = path.to_str().unwrap_or("");
             let re = Regex::new(r"^(\d{4})-(\d{2})-(\d{2}).").unwrap();
             let c = {
-                match re.captures(&id) {
+                match re.captures(id) {
                     Some(c) => c,
                     None => return Ok(None),
                 }
             };
             (
-                re.replace(&id, "").into_owned(),
+                re.replace(id, "").into_owned(),
                 NaiveDate::from_ymd(
                     FromStr::from_str(c.get(1).unwrap().as_str())?,
                     FromStr::from_str(c.get(2).unwrap().as_str())?,
