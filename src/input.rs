@@ -5,10 +5,10 @@ use crate::error::PathErrorContext;
 use crate::model::{Gallery, Image, ImageGroup};
 
 use anyhow::Result;
-use chrono::naive::NaiveDate;
 use regex::Regex;
 use std::path::{Path, PathBuf};
-use std::{fmt, fs, str::FromStr};
+use std::{fmt, fs};
+use time::{macros::format_description, Date};
 
 pub(crate) fn gallery_from_dir(path: &Path) -> Result<Gallery> {
     let mut image_groups = Vec::<ImageGroup>::new();
@@ -32,7 +32,7 @@ impl ImageGroup {
     fn from_entries(path: &Path, v: &[DirEntry]) -> Result<Option<ImageGroup>> {
         let (title, date) = {
             let id = path.to_str().unwrap_or("");
-            let re = Regex::new(r"^(\d{4})-(\d{2})-(\d{2}).").unwrap();
+            let re = Regex::new(r"^(\d{4}-\d{2}-\d{2}).").unwrap();
             let c = {
                 match re.captures(id) {
                     Some(c) => c,
@@ -41,11 +41,10 @@ impl ImageGroup {
             };
             (
                 re.replace(id, "").into_owned(),
-                NaiveDate::from_ymd(
-                    FromStr::from_str(c.get(1).unwrap().as_str())?,
-                    FromStr::from_str(c.get(2).unwrap().as_str())?,
-                    FromStr::from_str(c.get(3).unwrap().as_str())?,
-                ),
+                Date::parse(
+                    c.get(1).unwrap().as_str(),
+                    format_description!("[year]-[month]-[day]"),
+                )?,
             )
         };
         let mut images = Vec::new();
@@ -117,8 +116,8 @@ fn read_dir(base_dir: &Path) -> Result<Vec<DirEntry>> {
 #[cfg(test)]
 mod tests {
     use super::{DirEntry, Image, ImageGroup};
-    use chrono::naive::NaiveDate;
     use std::path::{Path, PathBuf};
+    use time::{Date, Month};
 
     fn dir(dirname: &str, file_names: &[(&str, bool)]) -> Vec<DirEntry> {
         file_names
@@ -133,7 +132,7 @@ mod tests {
     struct SimpleImageGroup<'a> {
         name: &'a str,
         title: &'a str,
-        date: NaiveDate,
+        date: Date,
         // (name, path)
         images: &'a [(&'a str, &'a str)],
         markdown_file: Option<&'a str>,
@@ -165,7 +164,7 @@ mod tests {
             Some(ImageGroup::from(SimpleImageGroup {
                 title: "Fuji, Japan",
                 name: "2021-01-01 Fuji, Japan",
-                date: NaiveDate::from_ymd(2021, 01, 01),
+                date: Date::from_calendar_date(2021, Month::January, 01).unwrap(),
                 images: &[],
                 markdown_file: None,
             }))
@@ -185,7 +184,7 @@ mod tests {
             Some(ImageGroup::from(SimpleImageGroup {
                 name: "2021-01-01 Fuji, Japan",
                 title: "Fuji, Japan",
-                date: NaiveDate::from_ymd(2021, 01, 01),
+                date: Date::from_calendar_date(2021, Month::January, 01).unwrap(),
                 images: &[
                     ("Summit", "2021-01-01 Fuji, Japan/Summit.webp"),
                     ("Valley", "2021-01-01 Fuji, Japan/Valley.webp"),
@@ -205,7 +204,7 @@ mod tests {
             Some(ImageGroup::from(SimpleImageGroup {
                 name: "2021-01-01 Fuji, Japan",
                 title: "Fuji, Japan",
-                date: NaiveDate::from_ymd(2021, 01, 01),
+                date: Date::from_calendar_date(2021, Month::January, 01).unwrap(),
                 images: &[],
                 markdown_file: Some("some/path/2021-01-01 Fuji, Japan/index.md")
             }))
@@ -229,7 +228,7 @@ mod tests {
             Some(ImageGroup::from(SimpleImageGroup {
                 name: "2021-12-01 Fuji, Japan",
                 title: "Fuji, Japan",
-                date: NaiveDate::from_ymd(2021, 12, 01),
+                date: Date::from_calendar_date(2021, Month::December, 01).unwrap(),
                 images: &[("Summit", "some/path/2021-12-01 Fuji, Japan/Summit.webp")],
                 markdown_file: None,
             }))

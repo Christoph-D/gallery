@@ -2,9 +2,9 @@
 use crate::error::{path_error, PathErrorContext};
 
 use anyhow::Result;
-use chrono::naive::NaiveDate;
 use std::fmt;
 use std::path::{Path, PathBuf};
+use time::Date;
 
 /// An input image.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -25,7 +25,7 @@ pub(crate) struct ImageGroup {
     /// The user-visible title of the image group.
     pub title: String,
     /// The date of the image group.
-    pub date: NaiveDate,
+    pub date: Date,
     /// The contained images.
     /// Sorted alphabetically.
     pub images: Vec<Image>,
@@ -149,8 +149,8 @@ fn to_web_path(path: &Path) -> Result<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::{to_web_path, Image, ImageGroup, ThumbnailType};
-    use chrono::naive::NaiveDate;
     use std::path::{Path, PathBuf};
+    use time::{Date, Month};
 
     // Tests for to_web_path.
 
@@ -195,7 +195,7 @@ mod tests {
         ImageGroup {
             path: PathBuf::from(group_path),
             title: "ignored".to_owned(),
-            date: NaiveDate::from_ymd(2021, 01, 01),
+            date: Date::from_calendar_date(2021, Month::January, 01).unwrap(),
             images: vec![Image {
                 name: "ignored".to_owned(),
                 path: image_path.clone(),
