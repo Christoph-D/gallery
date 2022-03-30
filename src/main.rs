@@ -5,8 +5,33 @@ mod model;
 mod output;
 
 use anyhow::{Context, Result};
-use clap::{App, Arg};
+use clap::Parser;
 use std::path::PathBuf;
+
+/// Commandline arguments.
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Cli {
+    /// If set, then don't write any files.
+    #[clap(long = "dry_run")]
+    dry_run: bool,
+
+    /// The source directory.
+    #[clap(long)]
+    input: String,
+
+    /// The output directory.
+    #[clap(long)]
+    output: String,
+
+    /// The top-level page title.
+    #[clap(long = "page_title")]
+    page_title: String,
+
+    /// An HTML snippet for the page footer.
+    #[clap(long)]
+    footer: Option<String>,
+}
 
 /// Generates a photo gallery based on the provided commandline arguments.
 ///
@@ -16,55 +41,21 @@ where
     I: IntoIterator<Item = T>,
     T: Into<std::ffi::OsString> + Clone,
 {
-    let matches = App::new("Gallery")
-        .arg(
-            Arg::with_name("dry_run")
-                .long("dry_run")
-                .help("If set, then don't write any files."),
-        )
-        .arg(
-            Arg::with_name("input")
-                .long("input")
-                .takes_value(true)
-                .required(true)
-                .help("The source directory."),
-        )
-        .arg(
-            Arg::with_name("output")
-                .long("output")
-                .takes_value(true)
-                .required(true)
-                .help("The output directory."),
-        )
-        .arg(
-            Arg::with_name("page_title")
-                .long("page_title")
-                .takes_value(true)
-                .required(true)
-                .help("The top-level page title."),
-        )
-        .arg(
-            Arg::with_name("footer")
-                .long("footer")
-                .takes_value(true)
-                .help("An HTML snippet for the page footer."),
-        )
-        .get_matches_from(args);
-
-    let input_path = PathBuf::from(matches.value_of("input").unwrap());
+    let args = Cli::parse_from(args);
+    let input_path = PathBuf::from(args.input);
     let gallery = input::gallery_from_dir(&input_path).with_context(|| "Failed to read gallery")?;
 
     output::write_files(
         &gallery,
         &output::Config {
-            output_path: PathBuf::from(matches.value_of("output").unwrap()),
-            run_mode: if matches.is_present("dry_run") {
+            output_path: PathBuf::from(args.output),
+            run_mode: if args.dry_run {
                 output::RunMode::DryRun
             } else {
                 output::RunMode::Normal
             },
-            page_title: matches.value_of("page_title").unwrap().to_string(),
-            page_footer: matches.value_of("footer").map(|s| s.to_string()),
+            page_title: args.page_title,
+            page_footer: args.footer,
         },
     )
     .with_context(|| "Failed to write gallery")
