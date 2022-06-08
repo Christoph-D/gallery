@@ -138,33 +138,28 @@ impl ImageGroupData {
         thumbnail_type: &ThumbnailType,
     ) -> Result<ImageGroupData> {
         // Suppress the title if it's redundant.
-        let title = if image_group.images.len() == 1
-            && image_group.images.get(0).unwrap().name == image_group.title
-        {
-            None
-        } else {
-            Some(image_group.title.clone())
+        let title =
+            if image_group.images.len() == 1 && image_group.images[0].name == image_group.title {
+                None
+            } else {
+                Some(image_group.title.clone())
+            };
+        let images = image_group
+            .images
+            .iter()
+            .map(|image| ImageData::from_image(image, image_group, thumbnail_type))
+            .collect::<Result<Vec<_>>>()?;
+        let markdown_content = match &image_group.markdown_file {
+            None => None,
+            Some(markdown_file) => Some(markdown::to_html(markdown_file, &images)?),
         };
-        let data = ImageGroupData {
+        Ok(ImageGroupData {
             title,
             footer: config.page_footer.clone(),
             date: image_group.date.to_string(),
-            markdown_content: None,
-            images: image_group
-                .images
-                .iter()
-                .map(|image| ImageData::from_image(image, image_group, thumbnail_type))
-                .collect::<Result<Vec<_>>>()?,
+            markdown_content,
+            images,
             url: url_to_string(&image_group.url()?)?,
-        };
-        let markdown = image_group
-            .markdown_file
-            .as_ref()
-            .map(|p| markdown::to_html(p, &data))
-            .transpose()?;
-        Ok(ImageGroupData {
-            markdown_content: markdown,
-            ..data
         })
     }
 }

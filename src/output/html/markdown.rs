@@ -10,7 +10,7 @@
 //!
 //! Some more text.
 //! ```
-use super::{ImageData, ImageGroupData};
+use super::ImageData;
 
 use crate::error::PathErrorContext;
 
@@ -19,7 +19,7 @@ use pulldown_cmark::{html, Event, Parser};
 use std::collections::HashSet;
 use std::{fs, path::Path};
 
-pub(super) fn to_html(input_file: &Path, image_group: &ImageGroupData) -> Result<String> {
+pub(super) fn to_html(input_file: &Path, images: &[ImageData]) -> Result<String> {
     let input = fs::read_to_string(input_file)
         .path_context("Failed to open image group markdown file", input_file)?;
 
@@ -28,7 +28,7 @@ pub(super) fn to_html(input_file: &Path, image_group: &ImageGroupData) -> Result
         let mut images_unknown = HashSet::new();
         let iter = ImageGroupMarkdownIterator {
             iter: Parser::new(&input),
-            image_group,
+            images,
             images_seen: &mut images_seen,
             images_unknown: &mut images_unknown,
         };
@@ -48,7 +48,7 @@ pub(super) fn to_html(input_file: &Path, image_group: &ImageGroupData) -> Result
     // The markdown file must reference all images in the group.
     let images_missing = {
         let mut missing = Vec::new();
-        for image in &image_group.images {
+        for image in images {
             if !images_seen.contains(&image.name) {
                 missing.push(image.name.to_owned());
             }
@@ -65,7 +65,7 @@ pub(super) fn to_html(input_file: &Path, image_group: &ImageGroupData) -> Result
 
 struct ImageGroupMarkdownIterator<'a, I> {
     iter: I,
-    image_group: &'a ImageGroupData,
+    images: &'a [ImageData],
     images_seen: &'a mut HashSet<String>,
     images_unknown: &'a mut HashSet<String>,
 }
@@ -93,11 +93,7 @@ impl<'a, I> ImageGroupMarkdownIterator<'a, I> {
             return None;
         }
         let image_name = text.strip_prefix(IMAGE_TAG_PREFIX).unwrap();
-        let maybe_image = self
-            .image_group
-            .images
-            .iter()
-            .find(|img| img.name == image_name);
+        let maybe_image = self.images.iter().find(|img| img.name == image_name);
 
         match maybe_image {
             None => {
