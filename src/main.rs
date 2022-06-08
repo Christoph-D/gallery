@@ -33,6 +33,25 @@ struct Cli {
     footer: Option<String>,
 }
 
+impl Cli {
+    fn run_mode(&self) -> output::RunMode {
+        if self.dry_run {
+            output::RunMode::DryRun
+        } else {
+            output::RunMode::Normal
+        }
+    }
+
+    fn output_config(&self) -> output::Config {
+        output::Config {
+            output_path: PathBuf::from(&self.output),
+            run_mode: self.run_mode(),
+            page_title: self.page_title.to_owned(),
+            page_footer: self.footer.to_owned(),
+        }
+    }
+}
+
 /// Generates a photo gallery based on the provided commandline arguments.
 ///
 /// To use the arguments provided by the system, pass in [`std::env::args_os()`].
@@ -42,23 +61,9 @@ where
     T: Into<std::ffi::OsString> + Clone,
 {
     let args = Cli::parse_from(args);
-    let input_path = PathBuf::from(args.input);
+    let input_path = PathBuf::from(&args.input);
     let gallery = input::gallery_from_dir(&input_path).with_context(|| "Failed to read gallery")?;
-
-    output::write_files(
-        &gallery,
-        &output::Config {
-            output_path: PathBuf::from(args.output),
-            run_mode: if args.dry_run {
-                output::RunMode::DryRun
-            } else {
-                output::RunMode::Normal
-            },
-            page_title: args.page_title,
-            page_footer: args.footer,
-        },
-    )
-    .with_context(|| "Failed to write gallery")
+    output::write_files(&gallery, &args.output_config()).with_context(|| "Failed to write gallery")
 }
 
 fn main() {
