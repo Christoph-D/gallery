@@ -132,6 +132,20 @@ struct ImageData {
 }
 
 impl ImageGroupData {
+    // Adds markdown content and reorders the images to match the markdown content.
+    fn add_markdown(self, markdown_file: &Option<PathBuf>) -> Result<Self> {
+        let markdown_file = match markdown_file {
+            None => return Ok(self),
+            Some(markdown_file) => markdown_file,
+        };
+        let res = markdown::to_html(markdown_file, self.images)?;
+        Ok(Self {
+            markdown_content: Some(res.html.clone()),
+            images: res.images_seen,
+            ..self
+        })
+    }
+
     fn from_image_group(
         config: &Config,
         image_group: &ImageGroup,
@@ -149,18 +163,15 @@ impl ImageGroupData {
             .iter()
             .map(|image| ImageData::from_image(image, image_group, thumbnail_type))
             .collect::<Result<Vec<_>>>()?;
-        let markdown_content = match &image_group.markdown_file {
-            None => None,
-            Some(markdown_file) => Some(markdown::to_html(markdown_file, &images)?),
-        };
-        Ok(ImageGroupData {
+        let data = ImageGroupData {
             title,
             footer: config.page_footer.clone(),
             date: image_group.date.to_string(),
-            markdown_content,
+            markdown_content: None,
             images,
             url: url_to_string(&image_group.url()?)?,
-        })
+        };
+        data.add_markdown(&image_group.markdown_file)
     }
 }
 

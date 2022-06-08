@@ -17,6 +17,6 @@ where
     C: anyhow::Context<T, E>,
 {
     fn path_context(self, msg: &str, path: &Path) -> anyhow::Result<T> {
-        self.with_context(|| format!("{}: {}", msg, path.to_string_lossy()))
+        self.with_context(|| format!("{}: \"{}\"", msg, path.to_string_lossy()))
     }
 }
