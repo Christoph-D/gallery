@@ -55,11 +55,7 @@ impl Cli {
 /// Generates a photo gallery based on the provided commandline arguments.
 ///
 /// To use the arguments provided by the system, pass in [`std::env::args_os()`].
-fn run_on_args<I, T>(args: I) -> Result<()>
-where
-    I: IntoIterator<Item = T>,
-    T: Into<std::ffi::OsString> + Clone,
-{
+fn run_on_args(args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
     let args = Cli::parse_from(args);
     let input_path = PathBuf::from(&args.input);
     let gallery = input::gallery_from_dir(&input_path).with_context(|| "Failed to read gallery")?;
