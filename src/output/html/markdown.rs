@@ -87,12 +87,12 @@ pub(super) fn to_html(input_file: &Path, images: Vec<ImageData>) -> Result<Rende
     }
     Ok(Rendered {
         html,
-        images_seen: reorder_images(images, &images_seen)?,
+        images_seen: reorder_images(images, &images_seen),
     })
 }
 
 // Reorder the given list of images to match their appearance in the markdown file.
-fn reorder_images(images: Vec<ImageData>, images_seen: &[String]) -> Result<Vec<ImageData>> {
+fn reorder_images(images: Vec<ImageData>, images_seen: &[String]) -> Vec<ImageData> {
     // Map image names to their index.
     // If an image appears multiple times, this takes the last index.
     let sort_keys = HashMap::<String, usize>::from_iter(
@@ -103,7 +103,7 @@ fn reorder_images(images: Vec<ImageData>, images_seen: &[String]) -> Result<Vec<
     );
     let mut images = images.into_iter().collect::<Vec<ImageData>>();
     images.sort_by_key(|img| sort_keys[&img.name]);
-    Ok(images)
+    images
 }
 
 struct ImageGroupMarkdownIterator<'a, I> {
@@ -136,10 +136,7 @@ impl<'a, I> ImageGroupMarkdownIterator<'a, I> {
         };
 
         const IMAGE_TAG_PREFIX: &str = "!image ";
-        if !text.starts_with(IMAGE_TAG_PREFIX) {
-            return None;
-        }
-        let image_name = text.strip_prefix(IMAGE_TAG_PREFIX).unwrap();
+        let image_name = text.strip_prefix(IMAGE_TAG_PREFIX)?;
         let maybe_image = self.images.iter().find(|img| img.name == image_name);
         match maybe_image {
             None => {
