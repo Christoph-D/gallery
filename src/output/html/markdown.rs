@@ -41,43 +41,47 @@ fn markdown_image_error<T>(message: &str, images: Vec<String>, input_file: &Path
     .path_context("Error in markdown file", input_file)
 }
 
-pub(super) fn to_html(input_file: &Path, images: Vec<ImageData>) -> Result<Rendered> {
-    let input = fs::read_to_string(input_file)
-        .path_context("Failed to open image group markdown file", input_file)?;
+#[derive(Default)]
+struct ImageStatistics {
+    // Images that are referenced in the markdown file in their order of appearance.
+    // May contain duplicates.
+    seen: Vec<String>,
+    // Unknown images in the markdown file.
+    unknown: Vec<String>,
+}
 
-    let (html, images_seen, images_unknown) = {
-        let mut images_seen = Vec::new();
-        let mut images_unknown = Vec::new();
-        let iter = ImageGroupMarkdownIterator {
-            iter: Parser::new(&input),
-            images: &images,
-            images_seen: &mut images_seen,
-            images_unknown: &mut images_unknown,
-        };
-        let mut out = String::new();
-        html::push_html(&mut out, iter);
-        (out, images_seen, images_unknown)
-    };
-
-    if !images_unknown.is_empty() {
-        return markdown_image_error(
-            "Unknown images in markdown file",
-            images_unknown,
-            input_file,
-        );
-    }
-
-    // The markdown file must reference all images in the group.
-    let images_missing = {
-        let images_seen_set = HashSet::<String>::from_iter(images_seen.iter().cloned());
+impl ImageStatistics {
+    // Images which exist as files but are missing from the the markdown file.
+    fn missing(&self, images: &[ImageData]) -> Vec<String> {
+        let images_seen_set = HashSet::<String>::from_iter(self.seen.iter().cloned());
         let mut missing = Vec::new();
-        for image in &images {
+        for image in images {
             if !images_seen_set.contains(&image.name) {
                 missing.push(image.name.to_owned());
             }
         }
         missing
+    }
+}
+
+pub(super) fn to_html(input_file: &Path, images: Vec<ImageData>) -> Result<Rendered> {
+    let input = fs::read_to_string(input_file)
+        .path_context("Failed to open image group markdown file", input_file)?;
+
+    let (html, stats) = {
+        let mut stats = ImageStatistics::default();
+        let iter = Parser::new(&input).map(|e| map_image_event(&e, &images, &mut stats));
+        let mut out = String::new();
+        html::push_html(&mut out, iter);
+        (out, stats)
     };
+
+    if !stats.unknown.is_empty() {
+        return markdown_image_error("Unknown images in markdown file", stats.unknown, input_file);
+    }
+
+    // The markdown file must reference all images in the group.
+    let images_missing = stats.missing(&images);
     if !images_missing.is_empty() {
         return markdown_image_error(
             "Images present on disk but missing from the markdown file",
@@ -87,7 +91,7 @@ pub(super) fn to_html(input_file: &Path, images: Vec<ImageData>) -> Result<Rende
     }
     Ok(Rendered {
         html,
-        images_seen: reorder_images(images, &images_seen),
+        images_seen: reorder_images(images, &stats.seen),
     })
 }
 
@@ -106,47 +110,31 @@ fn reorder_images(images: Vec<ImageData>, images_seen: &[String]) -> Vec<ImageDa
     images
 }
 
-struct ImageGroupMarkdownIterator<'a, I> {
-    iter: I,
-    // Images from files on disk.
+// Maps custom Markdown image tags to HTML snippets to include the image.
+fn map_image_event<'a, 'e>(
+    item: &Event<'e>,
     images: &'a [ImageData],
-    // Images that are referenced in the markdown file in their order of appearance.
-    // May contain duplicates.
-    images_seen: &'a mut Vec<String>,
-    // Images that are in images but missing in the markdown file.
-    images_unknown: &'a mut Vec<String>,
-}
+    stats: &'a mut ImageStatistics,
+) -> Event<'e> {
+    let text = match item {
+        Event::Text(text) => text,
+        _ => return item.clone(),
+    };
 
-impl<'a, 'e, I: Iterator<Item = Event<'e>>> Iterator for ImageGroupMarkdownIterator<'a, I> {
-    type Item = Event<'e>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.iter.next() {
-            Some(event) => self.map_image_event(&event).or(Some(event)),
-            None => None,
+    const IMAGE_TAG_PREFIX: &str = "!image ";
+    let image_name = match text.strip_prefix(IMAGE_TAG_PREFIX) {
+        Some(name) => name,
+        None => return item.clone(),
+    };
+    let maybe_image = images.iter().find(|img| img.name == image_name);
+    match maybe_image {
+        None => {
+            stats.unknown.push(image_name.to_owned());
+            item.clone()
         }
-    }
-}
-
-impl<'a, I> ImageGroupMarkdownIterator<'a, I> {
-    fn map_image_event<'e>(&mut self, item: &Event<'e>) -> Option<Event<'e>> {
-        let text = match item {
-            Event::Text(text) => text,
-            _ => return None,
-        };
-
-        const IMAGE_TAG_PREFIX: &str = "!image ";
-        let image_name = text.strip_prefix(IMAGE_TAG_PREFIX)?;
-        let maybe_image = self.images.iter().find(|img| img.name == image_name);
-        match maybe_image {
-            None => {
-                self.images_unknown.push(image_name.to_owned());
-                None
-            }
-            Some(img) => {
-                self.images_seen.push(image_name.to_owned());
-                Some(Event::Html(image_markdown_snippet(img).into()))
-            }
+        Some(img) => {
+            stats.seen.push(image_name.to_owned());
+            Event::Html(image_markdown_snippet(img).into())
         }
     }
 }
