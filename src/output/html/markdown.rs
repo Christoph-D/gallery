@@ -70,7 +70,7 @@ pub(super) fn to_html(input_file: &Path, images: Vec<ImageData>) -> Result<Rende
 
     let (html, stats) = {
         let mut stats = ImageStatistics::default();
-        let iter = Parser::new(&input).map(|e| map_image_event(&e, &images, &mut stats));
+        let iter = Parser::new(&input).map(|e| map_image_event(e, &images, &mut stats));
         let mut out = String::new();
         html::push_html(&mut out, iter);
         (out, stats)
@@ -111,26 +111,26 @@ fn reorder_images(images: Vec<ImageData>, images_seen: &[String]) -> Vec<ImageDa
 }
 
 // Maps custom Markdown image tags to HTML snippets to include the image.
-fn map_image_event<'a, 'e>(
-    item: &Event<'e>,
-    images: &'a [ImageData],
-    stats: &'a mut ImageStatistics,
-) -> Event<'e> {
+fn map_image_event<'a>(
+    item: Event<'a>,
+    images: &[ImageData],
+    stats: &mut ImageStatistics,
+) -> Event<'a> {
     let text = match item {
-        Event::Text(text) => text,
-        _ => return item.clone(),
+        Event::Text(ref text) => text,
+        _ => return item,
     };
 
     const IMAGE_TAG_PREFIX: &str = "!image ";
     let image_name = match text.strip_prefix(IMAGE_TAG_PREFIX) {
         Some(name) => name,
-        None => return item.clone(),
+        None => return item,
     };
     let maybe_image = images.iter().find(|img| img.name == image_name);
     match maybe_image {
         None => {
             stats.unknown.push(image_name.to_owned());
-            item.clone()
+            item
         }
         Some(img) => {
             stats.seen.push(image_name.to_owned());
