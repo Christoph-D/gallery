@@ -5,7 +5,7 @@
 //! * one page per image group for image groups with markdown files.
 mod markdown;
 
-use super::{create_parent_directories, Config, Item, RunMode};
+use super::{create_parent_directories, Config, GalleryOrder, Item, RunMode};
 
 use crate::error::{path_error, PathErrorContext};
 use crate::model::{Gallery, Image, ImageGroup, ThumbnailType};
@@ -41,11 +41,7 @@ pub(super) fn render_overview_html(
     let data = GalleryData {
         title: config.page_title.clone(),
         footer: config.page_footer.clone(),
-        image_groups: gallery
-            .image_groups
-            .iter()
-            .map(|group| ImageGroupData::from_image_group(config, group, &ThumbnailType::Small))
-            .collect::<Result<Vec<_>>>()?,
+        image_groups: image_groups_sorted(gallery, config)?,
     };
     Ok(Box::new(HTMLFile {
         content: templates
@@ -54,6 +50,25 @@ pub(super) fn render_overview_html(
             .with_context(|| "Failed to render overview HTML page")?,
         output_path: config.output_path.join("index.html"),
     }))
+}
+
+fn image_groups_sorted(gallery: &Gallery, config: &Config) -> Result<Vec<ImageGroupData>> {
+    let mut image_groups = gallery
+        .image_groups
+        .iter()
+        .map(|group| ImageGroupData::from_image_group(config, group, &ThumbnailType::Small))
+        .collect::<Result<Vec<_>>>()?;
+    image_groups.sort_by(|lhs, rhs| {
+        if lhs.date != rhs.date {
+            match config.order {
+                GalleryOrder::OldestFirst => lhs.date.cmp(&rhs.date),
+                GalleryOrder::MostRecentFirst => rhs.date.cmp(&lhs.date),
+            }
+        } else {
+            lhs.title.cmp(&rhs.title)
+        }
+    });
+    Ok(image_groups)
 }
 
 /// Renders an image group page into an [`Item`]. This may be [`None`] if no HTML is needed.

@@ -18,7 +18,6 @@ pub(crate) fn gallery_from_dir(path: &Path) -> Result<Gallery> {
             image_groups.push(group);
         }
     }
-    image_groups.sort_by(|lhs, rhs| rhs.date.cmp(&lhs.date));
     Ok(Gallery { image_groups })
 }
 

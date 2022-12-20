@@ -16,6 +16,10 @@ struct Cli {
     #[clap(long = "dry_run")]
     dry_run: bool,
 
+    /// If set, output groups in chronological order.
+    #[clap(long = "oldest_first")]
+    oldest_first: bool,
+
     /// The source directory.
     #[clap(long)]
     input: String,
@@ -42,9 +46,18 @@ impl Cli {
         }
     }
 
+    fn order(&self) -> output::GalleryOrder {
+        if self.oldest_first {
+            output::GalleryOrder::OldestFirst
+        } else {
+            output::GalleryOrder::MostRecentFirst
+        }
+    }
+
     fn output_config(&self) -> output::Config {
         output::Config {
             output_path: PathBuf::from(&self.output),
+            order: self.order(),
             run_mode: self.run_mode(),
             page_title: self.page_title.to_owned(),
             page_footer: self.footer.to_owned(),
