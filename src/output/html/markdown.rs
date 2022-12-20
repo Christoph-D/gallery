@@ -141,9 +141,9 @@ fn map_image_event<'a>(
 
 fn image_markdown_snippet(img: &ImageData) -> String {
     format!(
-        r#"<div class="card shadow-sm mb-3" id="{anchor}"><a href="{file_name}"><img class="card-img-top" src="../{thumbnail}"></a></div>"#,
+        r#"<div class="card shadow-sm mb-3" id="{anchor}"><a href="../{url}"><img class="card-img-top" src="../{thumbnail}"></a></div>"#,
         anchor = img.anchor,
-        file_name = img.file_name,
+        url = img.url,
         thumbnail = img.thumbnail,
     )
 }

@@ -1,5 +1,5 @@
 //! Data structures to represent image galleries throughput the program.
-use crate::error::{path_error, PathErrorContext};
+use crate::error::PathErrorContext;
 
 use anyhow::Result;
 use std::fmt;
@@ -63,25 +63,29 @@ impl Image {
             file_name,
         })
     }
+}
 
-    /// The URL to this image relative to the base directory.
-    pub(crate) fn url(&self, image_group: &ImageGroup) -> Result<PathBuf> {
-        Ok(image_group.url()?.join(self.url_file_name()?))
+impl ImageGroup {
+    /// The URL to this image group, relative to the base directory.
+    /// The return value is guaranteed to consist only of ASCII characters.
+    pub(crate) fn url(&self) -> Result<PathBuf> {
+        let mut p = to_web_path(&self.path)?;
+        p.set_extension("html");
+        Ok(PathBuf::from("html").join(p))
     }
-
-    /// The URL to this image relative to the location of the image.
-    /// That is, the returned path contains only one component.
-    pub(crate) fn url_file_name(&self) -> Result<PathBuf> {
-        to_web_path(&self.file_name)
+    /// The URL to an image in this image group, relative to the base directory.
+    /// The return value is guaranteed to consist only of ASCII characters.
+    pub(crate) fn image_url(&self, img: &Image) -> Result<PathBuf> {
+        Ok(PathBuf::from("img").join(self.image_filename(img)?))
     }
-
-    /// The URL to the thumbnail image relative to the output base directory.
+    /// The URL to an image in this image group, relative to the base directory.
+    /// The return value is guaranteed to consist only of ASCII characters.
     pub(crate) fn thumbnail_url(
         &self,
-        group: &ImageGroup,
+        img: &Image,
         thumbnail_type: &ThumbnailType,
     ) -> Result<PathBuf> {
-        let mut suffix = to_web_path(&group.path)?.join(to_web_path(&self.file_name)?);
+        let mut suffix = self.image_filename(img)?;
         // Always use webp for thumbnails to get a reasonable quality.
         suffix.set_extension("webp");
         let size = match thumbnail_type {
@@ -90,13 +94,10 @@ impl Image {
         };
         Ok(PathBuf::from("thumbnails").join(size).join(&suffix))
     }
-}
-
-impl ImageGroup {
-    /// The URL to this image group, relative to the base directory.
+    /// The web-safe filename of an image in this image group.
     /// The return value is guaranteed to consist only of ASCII characters.
-    pub(crate) fn url(&self) -> Result<PathBuf> {
-        to_web_path(&self.path)
+    pub(crate) fn image_filename(&self, img: &Image) -> Result<PathBuf> {
+        to_web_path(&self.path.join(&img.file_name))
     }
 }
 
@@ -128,14 +129,8 @@ impl fmt::Display for Gallery {
     }
 }
 
-/// Converts a single-element path into something suitable for a URL.
+/// Converts a path into something suitable for a URL. The resulting path consists of a single component.
 fn to_web_path(path: &Path) -> Result<PathBuf> {
-    if path.components().count() != 1 {
-        return Err(path_error(
-            "Cannot convert multi-component paths into URLs",
-            path,
-        ));
-    }
     let p = path
         .to_str()
         .path_context("Failed to convert path to UTF-8", path)?;
@@ -155,8 +150,8 @@ mod tests {
     // Tests for to_web_path.
 
     #[test]
-    fn to_web_path_empty_is_error() {
-        assert!(to_web_path(Path::new("")).is_err());
+    fn to_web_path_empty_is_empty() {
+        assert_eq!(to_web_path(Path::new("")).unwrap(), PathBuf::from(""));
     }
 
     #[test]
@@ -185,7 +180,10 @@ mod tests {
 
     #[test]
     fn to_web_path_multi_component_is_error() {
-        assert!(to_web_path(Path::new("2021-12-01 Fuji, Japan/Summit.webp")).is_err());
+        assert_eq!(
+            to_web_path(Path::new("2021-12-01 Fuji, Japan/Summit.webp")).unwrap(),
+            PathBuf::from("2021-12-01-fuji-japan-summit.webp")
+        );
     }
 
     // Tests for thumbnails.
@@ -213,8 +211,8 @@ mod tests {
         );
         let image = group.images.get(0).unwrap();
         assert_eq!(
-            image.thumbnail_url(&group, &ThumbnailType::Small).unwrap(),
-            PathBuf::from("thumbnails/small/2021-01-01-some-group/some-file.webp")
+            group.thumbnail_url(&image, &ThumbnailType::Small).unwrap(),
+            PathBuf::from("thumbnails/small/2021-01-01-some-group-some-file.webp")
         );
     }
 
@@ -226,9 +224,9 @@ mod tests {
         );
         let image = group.images.get(0).unwrap();
         assert_eq!(
-            image.thumbnail_url(&group, &ThumbnailType::Small).unwrap(),
+            group.thumbnail_url(&image, &ThumbnailType::Small).unwrap(),
             // The thumbnail should be webp even for jpeg source files.
-            PathBuf::from("thumbnails/small/2021-01-01-some-group/some-file.webp")
+            PathBuf::from("thumbnails/small/2021-01-01-some-group-some-file.webp")
         );
     }
 
@@ -240,8 +238,8 @@ mod tests {
         );
         let image = group.images.get(0).unwrap();
         assert_eq!(
-            image.thumbnail_url(&group, &ThumbnailType::Large).unwrap(),
-            PathBuf::from("thumbnails/large/2021-01-01-some-group/some-file.webp")
+            group.thumbnail_url(&image, &ThumbnailType::Large).unwrap(),
+            PathBuf::from("thumbnails/large/2021-01-01-some-group-some-file.webp")
         );
     }
 }

@@ -43,7 +43,7 @@ fn render_image(
 ) -> Result<Vec<Box<dyn Item + Send>>> {
     let mut res: Vec<Box<dyn Item + Send>> = vec![Box::new(ImageFile {
         input_path: image.path.clone(),
-        output_path: config.output_path.join(image.url(group)?),
+        output_path: config.output_path.join(group.image_url(image)?),
     })];
     for t in [ThumbnailType::Small, ThumbnailType::Large] {
         if let Some(p) = thumbnail_path(group, image, config, &t)? {
@@ -71,7 +71,7 @@ fn thumbnail_path(
         _ => Ok(Some(
             config
                 .output_path
-                .join(image.thumbnail_url(group, thumbnail_type)?),
+                .join(group.thumbnail_url(image, thumbnail_type)?),
         )),
     }
 }

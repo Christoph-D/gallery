@@ -88,10 +88,7 @@ pub(super) fn render_image_group_html(
                 image_group.title
             )
         })?,
-        output_path: config
-            .output_path
-            .join(image_group.url()?)
-            .join("index.html"),
+        output_path: config.output_path.join(image_group.url()?),
     })))
 }
 
@@ -140,7 +137,7 @@ struct ImageGroupData {
 /// Used in handlebars templates to describe a single image.
 #[derive(Serialize)]
 struct ImageData {
-    file_name: String,
+    url: String,
     name: String,
     thumbnail: String,
     anchor: String,
@@ -197,9 +194,9 @@ impl ImageData {
         thumbnail_type: &ThumbnailType,
     ) -> Result<ImageData> {
         Ok(ImageData {
-            file_name: url_to_string(&image.url_file_name()?)?,
+            url: url_to_string(&image_group.image_url(image)?)?,
             name: image.name.clone(),
-            thumbnail: url_to_string(&image.thumbnail_url(image_group, thumbnail_type)?)?,
+            thumbnail: url_to_string(&image_group.thumbnail_url(image, thumbnail_type)?)?,
             anchor: slug::slugify(&image.name),
         })
     }
