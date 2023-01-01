@@ -10,30 +10,30 @@ use std::path::PathBuf;
 
 /// Commandline arguments.
 #[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
+#[command(author, version, about, long_about = None)]
 struct Cli {
     /// If set, then don't write any files.
-    #[clap(long = "dry_run")]
+    #[arg(long = "dry_run")]
     dry_run: bool,
 
     /// If set, output groups in chronological order.
-    #[clap(long = "oldest_first")]
+    #[arg(long = "oldest_first")]
     oldest_first: bool,
 
     /// The source directory.
-    #[clap(long)]
+    #[arg(long)]
     input: String,
 
     /// The output directory.
-    #[clap(long)]
+    #[arg(long)]
     output: String,
 
     /// The top-level page title.
-    #[clap(long = "page_title")]
+    #[arg(long = "page_title")]
     page_title: String,
 
     /// An HTML snippet for the page footer.
-    #[clap(long)]
+    #[arg(long)]
     footer: Option<String>,
 }
 
