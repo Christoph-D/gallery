@@ -146,9 +146,8 @@ struct ImageData {
 impl ImageGroupData {
     // Adds markdown content and reorders the images to match the markdown content.
     fn add_markdown(self, markdown_file: &Option<PathBuf>) -> Result<Self> {
-        let markdown_file = match markdown_file {
-            None => return Ok(self),
-            Some(markdown_file) => markdown_file,
+        let Some(markdown_file) = markdown_file else {
+            return Ok(self);
         };
         let res = markdown::to_html(markdown_file, self.images)?;
         Ok(Self {

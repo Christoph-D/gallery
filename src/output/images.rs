@@ -131,7 +131,7 @@ impl ThumbnailFile {
         super::create_parent_directories(&self.output_path)?;
         let result = process::Command::new("convert")
             .arg(&self.input_path)
-            .args(&[
+            .args([
                 "-resize", dimensions, "-gravity", "center", "-crop", crop, "+repage", "-quality",
                 "80",
             ])

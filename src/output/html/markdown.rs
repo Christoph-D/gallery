@@ -116,27 +116,21 @@ fn map_image_event<'a>(
     images: &[ImageData],
     stats: &mut ImageStatistics,
 ) -> Event<'a> {
-    let text = match item {
-        Event::Text(ref text) => text,
-        _ => return item,
+    let Event::Text(ref text) = item else {
+        return item;
     };
 
     const IMAGE_TAG_PREFIX: &str = "!image ";
-    let image_name = match text.strip_prefix(IMAGE_TAG_PREFIX) {
-        Some(name) => name,
-        None => return item,
+    let Some(image_name) = text.strip_prefix(IMAGE_TAG_PREFIX) else {
+        return item;
     };
     let maybe_image = images.iter().find(|img| img.name == image_name);
-    match maybe_image {
-        None => {
-            stats.unknown.push(image_name.to_owned());
-            item
-        }
-        Some(img) => {
-            stats.seen.push(image_name.to_owned());
-            Event::Html(image_markdown_snippet(img).into())
-        }
-    }
+    let Some(img) = maybe_image else {
+        stats.unknown.push(image_name.to_owned());
+        return item;
+    };
+    stats.seen.push(image_name.to_owned());
+    Event::Html(image_markdown_snippet(img).into())
 }
 
 fn image_markdown_snippet(img: &ImageData) -> String {

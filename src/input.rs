@@ -32,11 +32,8 @@ impl ImageGroup {
         let (title, date) = {
             let id = path.to_str().unwrap_or("");
             let re = Regex::new(r"^(\d{4}-\d{2}-\d{2}).").unwrap();
-            let c = {
-                match re.captures(id) {
-                    Some(c) => c,
-                    None => return Ok(None),
-                }
+            let Some(c) = re.captures(id) else {
+                return Ok(None);
             };
             (
                 re.replace(id, "").into_owned(),
