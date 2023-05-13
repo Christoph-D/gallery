@@ -1,0 +1,22 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: cimg/rust:1.69.0
+    steps:
+      - checkout
+      - run: cargo fmt -- --check
+      - restore_cache:
+          key: cargo-cache
+      - run: cargo clippy
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y imagemagick webp
+      - run: cargo test
+      - save_cache:
+          key: cargo-cache
+          paths:
+            - "~/.cargo"
