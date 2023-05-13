@@ -1,6 +1,6 @@
 # Gallery
 
-[![Build Status](https://api.travis-ci.com/Christoph-D/gallery.svg?branch=main)](https://app.travis-ci.com/github/Christoph-D/gallery)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/Christoph-D/gallery/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/Christoph-D/gallery/tree/main)
 
 A static site generator for photo galleries.
 
