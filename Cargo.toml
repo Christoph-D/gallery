@@ -9,15 +9,15 @@ license = "MIT"
 repository = "https://github.com/Christoph-D/gallery"
 
 [dependencies]
-anyhow = "1.0.78"
-clap = { version = "4.4.12", features = ["derive"] }
-handlebars = "5.0.0"
+anyhow = "1.0.80"
+clap = { version = "4.5.1", features = ["derive"] }
+handlebars = "5.1.0"
 pulldown-cmark = { version = "0.10.0", default-features = false, features = ["html"] }
-rayon = "1.8.0"
-regex = "1.10.2"
-serde = { version = "1.0.193", features = ["derive"] }
+rayon = "1.8.1"
+regex = "1.10.3"
+serde = { version = "1.0.197", features = ["derive"] }
 slug = "0.1.5"
-time = { version = "0.3.31", features = ["macros", "parsing"] }
+time = { version = "0.3.34", features = ["macros", "parsing"] }
 
 [dev-dependencies]
-tempfile = "3.9.0"
+tempfile = "3.10.0"
