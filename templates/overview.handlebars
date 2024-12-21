@@ -1,66 +1,176 @@
 <!DOCTYPE html>
 <html lang="en-US">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
-    <title>{{title}}</title>
-  </head>
-  <body>
-    <main>
 
-      <section class="py-1 text-center container">
-        <div class="row py-lg-3">
-          <div class="col-lg-6 col-md-8 mx-auto">
-            <h1 class="fw-light">{{title}}</h1>
-          </div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/basicLightbox.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+  <title>{{title}}</title>
+</head>
+
+<body>
+  <main>
+
+    <section class="py-1 text-center container">
+      <div class="row py-lg-3">
+        <div class="col-lg-6 col-md-8 mx-auto">
+          <h1 class="fw-light">{{title}}</h1>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <div class="album py-5 bg-light">
-        <div class="container">
-          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 gx-3 gy-5">
-            {{#each image_groups}}
-            {{#each images}}
-            <div class="col">
-              <h2>
-              </h2>
-              <div class="card shadow-sm">
-                <a href="{{url}}"><img class="card-img-top" src="{{thumbnail}}"></a>
-                <div class="card-body">
-                  {{#if ../markdown_content}}
-                  <a href="{{../url}}">{{../title}} ↗</a>
-                  {{else}}
-                  {{../title}}
-                  {{/if}}
-                  <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">{{name}}</small>
-                    <small class="text-muted">{{../date}}</small>
-                  </div>
+    <div class="album py-5 bg-light">
+      <div class="container">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 gx-3 gy-5">
+          {{#each image_groups}}
+          {{#each images}}
+          <div class="col">
+            <h2>
+            </h2>
+            <div class="card shadow-sm">
+              <a href="{{url}}" onclick="return openLightbox('{{url}}')"><img class="card-img-top"
+                  src="{{thumbnail}}"></a>
+              <div class="card-body">
+                {{#if ../markdown_content}}
+                <a href="{{../url}}">{{../title}} ↗</a>
+                {{else}}
+                {{../title}}
+                {{/if}}
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">{{name}}</small>
+                  <small class="text-muted">{{../date}}</small>
                 </div>
               </div>
             </div>
-            {{/each}}
-            {{/each}}
           </div>
+          {{/each}}
+          {{/each}}
         </div>
       </div>
+    </div>
 
-    </main>
+  </main>
 
-    {{#if footer}}
-    <footer class="bd-footer text-muted bg-light">
-      <div class="container-fluid p-5">
-        <div class="row justify-content-center">
-          <div class="col-auto">
-            {{{footer}}}
-          </div>
+  {{#if footer}}
+  <footer class="bd-footer text-muted bg-light">
+    <div class="container-fluid p-5">
+      <div class="row justify-content-center">
+        <div class="col-auto">
+          {{{footer}}}
         </div>
       </div>
-    </footer>
-    {{/if}}
+    </div>
+  </footer>
+  {{/if}}
 
-    <script src="js/bootstrap.bundle.min.js"></script>
-  </body>
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/basicLightbox.min.js"></script>
+  <script src="js/wheel-zoom.min.js"></script>
+  <script>
+    function initLightbox() {
+      openLightbox = () => { };
+      if (document.documentElement.clientWidth < 700) {
+        return;
+      }
+
+      let zoomscript = null;
+      const lightbox = basicLightbox.create(`
+  <div id="lightboxoutercontainer">
+    <div id="lightboxclose">❌</div>
+    <div id="lightboxtitle"></div>
+    <div id="lightboximagecontainer" onclick="closeLightbox()">
+      <img id="lightboximage" onclick="event.stopPropagation()">
+    </div>
+  </div>
+  `, {
+        onShow: (lightbox) => {
+          lightbox.element().querySelector('#lightboxclose').onclick = lightbox.close
+          if (zoomscript) {
+            zoomscript.destroy();
+          }
+          zoomscript = WZoom.create(lightbox.element().querySelector('#lightboximage'), {
+            smoothTime: 0.1,
+            smoothTimeDrag: 0,
+            maxScale: 1.5,
+            speed: 1.3,
+            zoomOnClick: false,
+          });
+        },
+        onClose: () => {
+          history.replaceState(null, '', '#');
+        }
+      })
+
+      const images = [
+        {{#each image_groups}}
+        {{#each images}}
+        { url: "{{url}}", title: "{{../date}} {{../title}}, {{name}}" },
+        {{/each}}
+        {{/each}}
+      ]
+      let currentImageIndex = 0;
+      const imageContainer = lightbox.element().querySelector('#lightboximage')
+      imageContainer.ondragstart = function () { return false; };
+      imageContainer.onload = function () {
+        lightbox.element().querySelector('#lightboxtitle').textContent = images[currentImageIndex].title;
+        zoomscript.prepare();
+      }
+      window.onresize = () => { zoomscript.prepare(); };
+
+      function updateLightboxImage() {
+        const newURL = images[currentImageIndex].url;
+        imageContainer.src = newURL;
+        history.replaceState(null, '', '#' + newURL);
+      }
+
+      document.addEventListener(
+        "keydown",
+        (event) => {
+          const currentImage = imageContainer.src;
+          switch (event.code) {
+            case "ArrowLeft":
+              if (currentImageIndex > 0) {
+                --currentImageIndex
+              };
+              break;
+            case "ArrowRight":
+              if (currentImageIndex < images.length - 1) {
+                ++currentImageIndex;
+              }
+              break;
+            case "Escape":
+              lightbox.close();
+              break;
+            default:
+              return;
+          }
+          updateLightboxImage();
+        },
+        false,
+      );
+
+      openLightbox = (url) => {
+        const i = images.findIndex((img) => img.url === url)
+        if (i == -1) {
+          return true;
+        }
+        currentImageIndex = i;
+        updateLightboxImage();
+        lightbox.show();
+        return false;
+      }
+
+      closeLightbox = (event) => { lightbox.close(); }
+
+      const anchor = window.location.hash.substring(1);
+      if (anchor) {
+        openLightbox(anchor);
+      }
+    }
+    initLightbox();
+  </script>
+</body>
+
 </html>

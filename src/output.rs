@@ -69,20 +69,30 @@ pub(crate) fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
 
 /// Writes static assets such as CSS and Javascript files to disk.
 fn write_static(config: &Config) -> Result<()> {
-    let css_path = config.output_path.join("css").join("bootstrap.min.css");
-    let custom_css_path = config.output_path.join("css").join("style.css");
-    let js_path = config
-        .output_path
-        .join("js")
-        .join("bootstrap.bundle.min.js");
     for (path, content) in [
-        (&css_path, include_str!("../templates/bootstrap.min.css")),
-        (&custom_css_path, include_str!("../templates/style.css")),
         (
-            &js_path,
+            "css/bootstrap.min.css",
+            include_str!("../templates/bootstrap.min.css"),
+        ),
+        ("css/style.css", include_str!("../templates/style.css")),
+        (
+            "css/basicLightbox.min.css",
+            include_str!("../templates/basicLightbox.min.css"),
+        ),
+        (
+            "js/bootstrap.bundle.min.js",
             include_str!("../templates/bootstrap.bundle.min.js"),
         ),
+        (
+            "js/basicLightbox.min.js",
+            include_str!("../templates/basicLightbox.min.js"),
+        ),
+        (
+            "js/wheel-zoom.min.js",
+            include_str!("../templates/wheel-zoom.min.js"),
+        ),
     ] {
+        let path = &config.output_path.join(path);
         match config.run_mode {
             RunMode::Normal => {
                 create_parent_directories(path)?;
