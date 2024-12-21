@@ -1,154 +1,300 @@
 <!DOCTYPE html>
 <html lang="en-US">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
-    <title>Example gallery</title>
-  </head>
-  <body>
-    <main>
 
-      <section class="py-1 text-center container">
-        <div class="row py-lg-3">
-          <div class="col-lg-6 col-md-8 mx-auto">
-            <h1 class="fw-light">Example gallery</h1>
-          </div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/basicLightbox.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+  <title>Example gallery</title>
+</head>
+
+<body>
+  <main>
+
+    <section class="py-1 text-center container">
+      <div class="row py-lg-3">
+        <div class="col-lg-6 col-md-8 mx-auto">
+          <h1 class="fw-light">Example gallery</h1>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <div class="album py-5 bg-light">
-        <div class="container">
-          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 gx-3 gy-5">
-            <div class="col">
-              <h2>
-              </h2>
-              <div class="card shadow-sm">
-                <a href="img/2021-08-14-chli-aubrig-schwyz-summit-view.webp"><img class="card-img-top" src="thumbnails/small/2021-08-14-chli-aubrig-schwyz-summit-view.webp"></a>
-                <div class="card-body">
-                  Chli Aubrig, Schwyz
-                  <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">Summit view</small>
-                    <small class="text-muted">2021-08-14</small>
-                  </div>
+    <div class="album py-5 bg-light">
+      <div class="container">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 gx-3 gy-5">
+          <div class="col">
+            <h2>
+            </h2>
+            <div class="card shadow-sm">
+              <a href="img/2021-08-14-chli-aubrig-schwyz-summit-view.webp" onclick="return openLightbox('img/2021-08-14-chli-aubrig-schwyz-summit-view.webp')"><img class="card-img-top"
+                  src="thumbnails/small/2021-08-14-chli-aubrig-schwyz-summit-view.webp"></a>
+              <div class="card-body">
+                Chli Aubrig, Schwyz
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">Summit view</small>
+                  <small class="text-muted">2021-08-14</small>
                 </div>
               </div>
             </div>
-            <div class="col">
-              <h2>
-              </h2>
-              <div class="card shadow-sm">
-                <a href="img/2021-08-14-chli-aubrig-schwyz-summit-view-2.webp"><img class="card-img-top" src="thumbnails/small/2021-08-14-chli-aubrig-schwyz-summit-view-2.webp"></a>
-                <div class="card-body">
-                  Chli Aubrig, Schwyz
-                  <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">Summit view 2</small>
-                    <small class="text-muted">2021-08-14</small>
-                  </div>
+          </div>
+          <div class="col">
+            <h2>
+            </h2>
+            <div class="card shadow-sm">
+              <a href="img/2021-08-14-chli-aubrig-schwyz-summit-view-2.webp" onclick="return openLightbox('img/2021-08-14-chli-aubrig-schwyz-summit-view-2.webp')"><img class="card-img-top"
+                  src="thumbnails/small/2021-08-14-chli-aubrig-schwyz-summit-view-2.webp"></a>
+              <div class="card-body">
+                Chli Aubrig, Schwyz
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">Summit view 2</small>
+                  <small class="text-muted">2021-08-14</small>
                 </div>
               </div>
             </div>
-            <div class="col">
-              <h2>
-              </h2>
-              <div class="card shadow-sm">
-                <a href="img/2021-06-13-obersee-glarus-afternoon.webp"><img class="card-img-top" src="thumbnails/small/2021-06-13-obersee-glarus-afternoon.webp"></a>
-                <div class="card-body">
-                  Obersee, Glarus
-                  <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">Afternoon</small>
-                    <small class="text-muted">2021-06-13</small>
-                  </div>
+          </div>
+          <div class="col">
+            <h2>
+            </h2>
+            <div class="card shadow-sm">
+              <a href="img/2021-06-13-obersee-glarus-afternoon.webp" onclick="return openLightbox('img/2021-06-13-obersee-glarus-afternoon.webp')"><img class="card-img-top"
+                  src="thumbnails/small/2021-06-13-obersee-glarus-afternoon.webp"></a>
+              <div class="card-body">
+                Obersee, Glarus
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">Afternoon</small>
+                  <small class="text-muted">2021-06-13</small>
                 </div>
               </div>
             </div>
-            <div class="col">
-              <h2>
-              </h2>
-              <div class="card shadow-sm">
-                <a href="img/2021-04-24-wagitaler-see-schwyz-flowers.webp"><img class="card-img-top" src="thumbnails/small/2021-04-24-wagitaler-see-schwyz-flowers.webp"></a>
-                <div class="card-body">
-                  <a href="html/2021-04-24-wagitaler-see-schwyz.html">Wägitaler See, Schwyz ↗</a>
-                  <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">Flowers</small>
-                    <small class="text-muted">2021-04-24</small>
-                  </div>
+          </div>
+          <div class="col">
+            <h2>
+            </h2>
+            <div class="card shadow-sm">
+              <a href="img/2021-04-24-wagitaler-see-schwyz-flowers.webp" onclick="return openLightbox('img/2021-04-24-wagitaler-see-schwyz-flowers.webp')"><img class="card-img-top"
+                  src="thumbnails/small/2021-04-24-wagitaler-see-schwyz-flowers.webp"></a>
+              <div class="card-body">
+                <a href="html/2021-04-24-wagitaler-see-schwyz.html">Wägitaler See, Schwyz ↗</a>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">Flowers</small>
+                  <small class="text-muted">2021-04-24</small>
                 </div>
               </div>
             </div>
-            <div class="col">
-              <h2>
-              </h2>
-              <div class="card shadow-sm">
-                <a href="img/2021-04-24-wagitaler-see-schwyz-panorama.webp"><img class="card-img-top" src="thumbnails/small/2021-04-24-wagitaler-see-schwyz-panorama.webp"></a>
-                <div class="card-body">
-                  <a href="html/2021-04-24-wagitaler-see-schwyz.html">Wägitaler See, Schwyz ↗</a>
-                  <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">Panorama</small>
-                    <small class="text-muted">2021-04-24</small>
-                  </div>
+          </div>
+          <div class="col">
+            <h2>
+            </h2>
+            <div class="card shadow-sm">
+              <a href="img/2021-04-24-wagitaler-see-schwyz-panorama.webp" onclick="return openLightbox('img/2021-04-24-wagitaler-see-schwyz-panorama.webp')"><img class="card-img-top"
+                  src="thumbnails/small/2021-04-24-wagitaler-see-schwyz-panorama.webp"></a>
+              <div class="card-body">
+                <a href="html/2021-04-24-wagitaler-see-schwyz.html">Wägitaler See, Schwyz ↗</a>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">Panorama</small>
+                  <small class="text-muted">2021-04-24</small>
                 </div>
               </div>
             </div>
-            <div class="col">
-              <h2>
-              </h2>
-              <div class="card shadow-sm">
-                <a href="img/2021-04-24-wagitaler-see-schwyz-snow-path.webp"><img class="card-img-top" src="thumbnails/small/2021-04-24-wagitaler-see-schwyz-snow-path.webp"></a>
-                <div class="card-body">
-                  <a href="html/2021-04-24-wagitaler-see-schwyz.html">Wägitaler See, Schwyz ↗</a>
-                  <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">Snow path</small>
-                    <small class="text-muted">2021-04-24</small>
-                  </div>
+          </div>
+          <div class="col">
+            <h2>
+            </h2>
+            <div class="card shadow-sm">
+              <a href="img/2021-04-24-wagitaler-see-schwyz-snow-path.webp" onclick="return openLightbox('img/2021-04-24-wagitaler-see-schwyz-snow-path.webp')"><img class="card-img-top"
+                  src="thumbnails/small/2021-04-24-wagitaler-see-schwyz-snow-path.webp"></a>
+              <div class="card-body">
+                <a href="html/2021-04-24-wagitaler-see-schwyz.html">Wägitaler See, Schwyz ↗</a>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">Snow path</small>
+                  <small class="text-muted">2021-04-24</small>
                 </div>
               </div>
             </div>
-            <div class="col">
-              <h2>
-              </h2>
-              <div class="card shadow-sm">
-                <a href="img/2021-04-24-wagitaler-see-schwyz-cable.webp"><img class="card-img-top" src="thumbnails/small/2021-04-24-wagitaler-see-schwyz-cable.webp"></a>
-                <div class="card-body">
-                  <a href="html/2021-04-24-wagitaler-see-schwyz.html">Wägitaler See, Schwyz ↗</a>
-                  <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">Cable</small>
-                    <small class="text-muted">2021-04-24</small>
-                  </div>
+          </div>
+          <div class="col">
+            <h2>
+            </h2>
+            <div class="card shadow-sm">
+              <a href="img/2021-04-24-wagitaler-see-schwyz-cable.webp" onclick="return openLightbox('img/2021-04-24-wagitaler-see-schwyz-cable.webp')"><img class="card-img-top"
+                  src="thumbnails/small/2021-04-24-wagitaler-see-schwyz-cable.webp"></a>
+              <div class="card-body">
+                <a href="html/2021-04-24-wagitaler-see-schwyz.html">Wägitaler See, Schwyz ↗</a>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">Cable</small>
+                  <small class="text-muted">2021-04-24</small>
                 </div>
               </div>
             </div>
-            <div class="col">
-              <h2>
-              </h2>
-              <div class="card shadow-sm">
-                <a href="img/2021-04-24-wagitaler-see-schwyz-mountain.webp"><img class="card-img-top" src="thumbnails/small/2021-04-24-wagitaler-see-schwyz-mountain.webp"></a>
-                <div class="card-body">
-                  <a href="html/2021-04-24-wagitaler-see-schwyz.html">Wägitaler See, Schwyz ↗</a>
-                  <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">Mountain</small>
-                    <small class="text-muted">2021-04-24</small>
-                  </div>
+          </div>
+          <div class="col">
+            <h2>
+            </h2>
+            <div class="card shadow-sm">
+              <a href="img/2021-04-24-wagitaler-see-schwyz-mountain.webp" onclick="return openLightbox('img/2021-04-24-wagitaler-see-schwyz-mountain.webp')"><img class="card-img-top"
+                  src="thumbnails/small/2021-04-24-wagitaler-see-schwyz-mountain.webp"></a>
+              <div class="card-body">
+                <a href="html/2021-04-24-wagitaler-see-schwyz.html">Wägitaler See, Schwyz ↗</a>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">Mountain</small>
+                  <small class="text-muted">2021-04-24</small>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-    </main>
+  </main>
 
-    <footer class="bd-footer text-muted bg-light">
-      <div class="container-fluid p-5">
-        <div class="row justify-content-center">
-          <div class="col-auto">
-            All rights reserved. Contact: <a href="mailto:github@yozora.eu">github@yozora.eu</a>
-          </div>
+  <footer class="bd-footer text-muted bg-light">
+    <div class="container-fluid p-5">
+      <div class="row justify-content-center">
+        <div class="col-auto">
+          All rights reserved. Contact: <a href="mailto:github@yozora.eu">github@yozora.eu</a>
         </div>
       </div>
-    </footer>
+    </div>
+  </footer>
 
-    <script src="js/bootstrap.bundle.min.js"></script>
-  </body>
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/basicLightbox.min.js"></script>
+  <script src="js/wheel-zoom.min.js"></script>
+  <script>
+    function initLightbox(images) {
+      openLightbox = () => { };
+      // The lightbox doesn't work well on small devices.
+      if (document.documentElement.clientWidth < 700) {
+        return;
+      }
+
+      let zoomscript = null;
+      const lightbox = basicLightbox.create(`
+  <div id="lightboxoutercontainer">
+    <div id="lightboxclose">❌</div>
+    <div id="lightboxtitle"></div>
+    <div id="lightboximagecontainer" onclick="closeLightbox()">
+      <img id="lightboximage" onclick="event.stopPropagation()">
+    </div>
+    <div class="lightboxarrow" id="lightboxarrowright" onclick="openNextImage()">►</div>
+    <div class="lightboxarrow" id="lightboxarrowleft" onclick="openPreviousImage()">◄</div>
+  </div>
+  `, {
+        onShow: (lightbox) => {
+          lightbox.element().querySelector('#lightboxclose').onclick = lightbox.close
+          if (zoomscript) {
+            zoomscript.destroy();
+          }
+          zoomscript = WZoom.create(lightbox.element().querySelector('#lightboximage'), {
+            smoothTime: 0.1,
+            smoothTimeDrag: 0,
+            maxScale: 1.5,
+            speed: 1.3,
+            zoomOnClick: false,
+          });
+        },
+        onClose: () => history.replaceState(null, '', '#'),
+      })
+
+      let currentImageIndex = 0;
+      let nextImagePreloaded = -1;
+      let preloadedImg = new Image();
+      const imageContainer = lightbox.element().querySelector('#lightboximage');
+      // Disable dragging, it interferes with the panning from the zoom script.
+      imageContainer.ondragstart = () => { return false; };
+      imageContainer.onload = () => {
+        zoomscript.prepare();
+        imageContainer.style.filter = '';
+        imageContainer.style.visibility = 'visible';
+        // Preload next image
+        if (currentImageIndex < images.length - 1) {
+          preloadedImg.src = '';
+          preloadedImg.onload = () => { nextImagePreloaded = currentImageIndex + 1; }
+          preloadedImg.src = images[currentImageIndex + 1].url;
+        }
+      }
+      window.onresize = () => { zoomscript.prepare(); };
+
+      const newImg = new Image();
+      newImg.onload = () => {
+        imageContainer.style.visibility = 'hidden';  // Minimize flickering
+        imageContainer.src = newImg.src;
+      }
+      function updateLightboxImage() {
+        // Update the title immediately for responsiveness.
+        lightbox.element().querySelector('#lightboxtitle').textContent = images[currentImageIndex].title;
+
+        // Load the image while keeping the old image visible to minimize flickering from the zoom script.
+        const newURL = images[currentImageIndex].url;
+        newImg.src = images[currentImageIndex].url;
+        history.replaceState(null, '', '#' + newURL);
+        if (nextImagePreloaded !== currentImageIndex) { // not preloaded, loading could be slow
+          imageContainer.style.filter = 'brightness(30%)';
+        }
+        // Cancel pending preload.
+        preloadedImg.onload = () => {};
+        preloadedImg.src = '';
+      }
+
+      openPreviousImage = () => {
+        if (currentImageIndex > 0) {
+          --currentImageIndex
+        };
+        updateLightboxImage();
+      }
+      openNextImage = () => {
+        if (currentImageIndex < images.length - 1) {
+          ++currentImageIndex;
+        }
+        updateLightboxImage();
+      }
+
+      document.addEventListener(
+        "keydown",
+        (event) => {
+          switch (event.code) {
+            case "ArrowLeft": openPreviousImage(); break;
+            case "ArrowRight": openNextImage(); break;
+            case "Escape": closeLightbox(); break;
+          }
+        },
+        false,
+      );
+
+      openLightbox = (url) => {
+        const i = images.findIndex((img) => img.url === url)
+        if (i == -1) {
+          return true;
+        }
+        currentImageIndex = i;
+        updateLightboxImage();
+        lightbox.show();
+        return false;
+      }
+
+      closeLightbox = () => lightbox.close();
+
+      const anchor = window.location.hash.substring(1);
+      if (anchor) {
+        openLightbox(anchor);
+      }
+    }
+
+    const images = [
+      { url: "img/2021-08-14-chli-aubrig-schwyz-summit-view.webp", title: "2021-08-14 Chli Aubrig, Schwyz, Summit view" },
+      { url: "img/2021-08-14-chli-aubrig-schwyz-summit-view-2.webp", title: "2021-08-14 Chli Aubrig, Schwyz, Summit view 2" },
+      { url: "img/2021-06-13-obersee-glarus-afternoon.webp", title: "2021-06-13 Obersee, Glarus, Afternoon" },
+      { url: "img/2021-04-24-wagitaler-see-schwyz-flowers.webp", title: "2021-04-24 Wägitaler See, Schwyz, Flowers" },
+      { url: "img/2021-04-24-wagitaler-see-schwyz-panorama.webp", title: "2021-04-24 Wägitaler See, Schwyz, Panorama" },
+      { url: "img/2021-04-24-wagitaler-see-schwyz-snow-path.webp", title: "2021-04-24 Wägitaler See, Schwyz, Snow path" },
+      { url: "img/2021-04-24-wagitaler-see-schwyz-cable.webp", title: "2021-04-24 Wägitaler See, Schwyz, Cable" },
+      { url: "img/2021-04-24-wagitaler-see-schwyz-mountain.webp", title: "2021-04-24 Wägitaler See, Schwyz, Mountain" },
+    ]
+    initLightbox(images);
+  </script>
+</body>
+
 </html>

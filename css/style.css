@@ -1,0 +1,44 @@
+#lightboxoutercontainer {
+    height: 100vh;
+}
+
+#lightboxclose {
+    position: absolute;
+    right: 10pt;
+    font-size: 20pt;
+    user-select: none;
+    height: 30px;
+}
+
+#lightboxtitle {
+    text-align: center;
+    font-size: 15pt;
+    color: white;
+}
+
+#lightboximagecontainer {
+    height: calc(100% - 30px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.basicLightbox {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.lightboxarrow {
+    position: absolute;
+    top: 50%;
+    font-size: 20pt;
+    user-select: none;
+    color: white;
+}
+
+#lightboxarrowright {
+    right: 10pt;
+}
+
+#lightboxarrowleft {
+    left: 10pt;
+}
