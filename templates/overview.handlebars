@@ -111,22 +111,43 @@
         {{/each}}
       ]
       let currentImageIndex = 0;
-      const imageContainer = lightbox.element().querySelector('#lightboximage')
-      imageContainer.ondragstart = function () { return false; };
-      imageContainer.onload = function () {
-        lightbox.element().querySelector('#lightboxtitle').textContent = images[currentImageIndex].title;
+      let nextImagePreloaded = -1;
+      let preloadedImg = new Image();
+      const imageContainer = lightbox.element().querySelector('#lightboximage');
+      // Disable dragging, it interferes with the panning from the zoom script.
+      imageContainer.ondragstart = () => { return false; };
+      imageContainer.onload = () => {
         zoomscript.prepare();
+        imageContainer.style.filter = '';
+        imageContainer.style.visibility = 'visible';
         // Preload next image
         if (currentImageIndex < images.length - 1) {
-          new Image().src = images[currentImageIndex + 1].url;
+          preloadedImg.src = '';
+          preloadedImg.onload = () => { nextImagePreloaded = currentImageIndex + 1; }
+          preloadedImg.src = images[currentImageIndex + 1].url;
         }
       }
       window.onresize = () => { zoomscript.prepare(); };
 
+      const newImg = new Image();
+      newImg.onload = () => {
+        imageContainer.style.visibility = 'hidden';  // Minimize flickering
+        imageContainer.src = newImg.src;
+      }
       function updateLightboxImage() {
+        // Update the title immediately for responsiveness.
+        lightbox.element().querySelector('#lightboxtitle').textContent = images[currentImageIndex].title;
+
+        // Load the image while keeping the old image visible to minimize flickering from the zoom script.
         const newURL = images[currentImageIndex].url;
-        imageContainer.src = newURL;
+        newImg.src = images[currentImageIndex].url;
         history.replaceState(null, '', '#' + newURL);
+        if (nextImagePreloaded !== currentImageIndex) { // not preloaded, loading could be slow
+          imageContainer.style.filter = 'brightness(30%)';
+        }
+        // Cancel pending preload.
+        preloadedImg.onload = () => {};
+        preloadedImg.src = '';
       }
 
       document.addEventListener(
