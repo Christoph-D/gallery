@@ -69,8 +69,9 @@
   <script src="js/basicLightbox.min.js"></script>
   <script src="js/wheel-zoom.min.js"></script>
   <script>
-    function initLightbox() {
+    function initLightbox(images) {
       openLightbox = () => { };
+      // The lightbox doesn't work well on small devices.
       if (document.documentElement.clientWidth < 700) {
         return;
       }
@@ -83,6 +84,8 @@
     <div id="lightboximagecontainer" onclick="closeLightbox()">
       <img id="lightboximage" onclick="event.stopPropagation()">
     </div>
+    <div class="lightboxarrow" id="lightboxarrowright" onclick="openNextImage()">►</div>
+    <div class="lightboxarrow" id="lightboxarrowleft" onclick="openPreviousImage()">◄</div>
   </div>
   `, {
         onShow: (lightbox) => {
@@ -98,18 +101,9 @@
             zoomOnClick: false,
           });
         },
-        onClose: () => {
-          history.replaceState(null, '', '#');
-        }
+        onClose: () => history.replaceState(null, '', '#'),
       })
 
-      const images = [
-        {{#each image_groups}}
-        {{#each images}}
-        { url: "{{url}}", title: "{{../date}} {{../title}}, {{name}}" },
-        {{/each}}
-        {{/each}}
-      ]
       let currentImageIndex = 0;
       let nextImagePreloaded = -1;
       let preloadedImg = new Image();
@@ -150,28 +144,27 @@
         preloadedImg.src = '';
       }
 
+      openPreviousImage = () => {
+        if (currentImageIndex > 0) {
+          --currentImageIndex
+        };
+        updateLightboxImage();
+      }
+      openNextImage = () => {
+        if (currentImageIndex < images.length - 1) {
+          ++currentImageIndex;
+        }
+        updateLightboxImage();
+      }
+
       document.addEventListener(
         "keydown",
         (event) => {
-          const currentImage = imageContainer.src;
           switch (event.code) {
-            case "ArrowLeft":
-              if (currentImageIndex > 0) {
-                --currentImageIndex
-              };
-              break;
-            case "ArrowRight":
-              if (currentImageIndex < images.length - 1) {
-                ++currentImageIndex;
-              }
-              break;
-            case "Escape":
-              lightbox.close();
-              break;
-            default:
-              return;
+            case "ArrowLeft": openPreviousImage(); break;
+            case "ArrowRight": openNextImage(); break;
+            case "Escape": closeLightbox(); break;
           }
-          updateLightboxImage();
         },
         false,
       );
@@ -187,14 +180,22 @@
         return false;
       }
 
-      closeLightbox = (event) => { lightbox.close(); }
+      closeLightbox = () => lightbox.close();
 
       const anchor = window.location.hash.substring(1);
       if (anchor) {
         openLightbox(anchor);
       }
     }
-    initLightbox();
+
+    const images = [
+      {{#each image_groups}}
+      {{#each images}}
+      { url: "{{url}}", title: "{{../date}} {{../title}}, {{name}}" },
+      {{/each}}
+      {{/each}}
+    ]
+    initLightbox(images);
   </script>
 </body>
 

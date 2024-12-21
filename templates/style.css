@@ -26,3 +26,19 @@
 .basicLightbox {
     background: rgba(0, 0, 0, 0.9);
 }
+
+.lightboxarrow {
+    position: absolute;
+    top: 50%;
+    font-size: 20pt;
+    user-select: none;
+    color: white;
+}
+
+#lightboxarrowright {
+    right: 10pt;
+}
+
+#lightboxarrowleft {
+    left: 10pt;
+}
