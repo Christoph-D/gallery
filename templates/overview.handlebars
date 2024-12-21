@@ -116,6 +116,10 @@
       imageContainer.onload = function () {
         lightbox.element().querySelector('#lightboxtitle').textContent = images[currentImageIndex].title;
         zoomscript.prepare();
+        // Preload next image
+        if (currentImageIndex < images.length - 1) {
+          new Image().src = images[currentImageIndex + 1].url;
+        }
       }
       window.onresize = () => { zoomscript.prepare(); };
 
