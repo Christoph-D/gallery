@@ -6,6 +6,7 @@ use crate::error::PathErrorContext;
 use crate::model::{Image, ImageGroup, ThumbnailType};
 
 use anyhow::{Result, anyhow};
+use base64::{Engine as _, engine::general_purpose};
 use std::path::{Path, PathBuf};
 use std::{fs, process};
 
@@ -85,6 +86,42 @@ fn needs_update(input_path: &Path, output_path: &Path) -> bool {
         Ok(output_modified < input_modified)
     };
     res().unwrap_or(true)
+}
+
+/// Generates a tiny base64-encoded placeholder image.
+pub fn generate_placeholder(thumbnail_path: &Path) -> Result<String> {
+    let output = process::Command::new("convert")
+        .arg(thumbnail_path)
+        .args([
+            "-resize",
+            "30x",
+            "-gravity",
+            "center",
+            "-crop",
+            "30x20+0+0",
+            "+repage",
+            "-strip",
+            "-define",
+            "webp:method=6",
+            "webp:-",
+        ])
+        .output()
+        .path_context(
+            "Failed to run imagemagick 'convert' for placeholder",
+            thumbnail_path,
+        )?;
+
+    if !output.status.success() {
+        return Err(anyhow!(
+            "Failed to create placeholder: \"{}\"\nstderr:\n{}\n\nstdout:\n{}\n",
+            thumbnail_path.to_string_lossy(),
+            String::from_utf8_lossy(&output.stderr),
+            String::from_utf8_lossy(&output.stdout),
+        ));
+    }
+
+    let base64 = general_purpose::STANDARD.encode(&output.stdout);
+    Ok(format!("data:image/webp;base64,{}", base64))
 }
 
 impl Item for ImageFile {

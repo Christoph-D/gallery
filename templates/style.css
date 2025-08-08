@@ -42,3 +42,12 @@
 #lightboxarrowleft {
     left: 10pt;
 }
+
+.thumbnail-placeholder img {
+    filter: blur(10px);
+    transition: filter 0.3s ease;
+}
+
+.thumbnail-placeholder img[src]:not([src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"]) {
+    filter: none;
+}

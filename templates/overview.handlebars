@@ -30,8 +30,11 @@
             <h2>
             </h2>
             <div class="card shadow-sm">
-              <a href="{{url}}" onclick="return openLightbox('{{url}}')"><img class="card-img-top"
-                  src="{{thumbnail}}"></a>
+              <a href="{{url}}" onclick="return openLightbox('{{url}}')">
+                <div class="thumbnail-placeholder" data-thumbnail-url="{{thumbnail}}">
+                  <img class="card-img-top" src="{{placeholder}}" alt="Loading...">
+                </div>
+              </a>
               <div class="card-body">
                 {{#if ../markdown_content}}
                 <a href="{{../url}}">{{../title}} ↗</a>
@@ -68,6 +71,7 @@
   <script src="js/bootstrap.bundle.min.js"></script>
   <script src="js/basicLightbox.min.js"></script>
   <script src="js/wheel-zoom.min.js"></script>
+  <script src="js/lazyload.js"></script>
   <script>
     function initLightbox(images) {
       openLightbox = () => { };

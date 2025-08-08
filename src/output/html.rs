@@ -9,6 +9,7 @@ use super::{Config, GalleryOrder, Item, RunMode, create_parent_directories};
 
 use crate::error::{PathErrorContext, path_error};
 use crate::model::{Gallery, Image, ImageGroup, ThumbnailType};
+use crate::output::images::generate_placeholder;
 
 use anyhow::{Context, Result};
 use handlebars::Handlebars;
@@ -141,6 +142,7 @@ struct ImageData {
     name: String,
     thumbnail: String,
     anchor: String,
+    placeholder: String,
 }
 
 impl ImageGroupData {
@@ -172,7 +174,7 @@ impl ImageGroupData {
         let images = image_group
             .images
             .iter()
-            .map(|image| ImageData::from_image(image, image_group, thumbnail_type))
+            .map(|image| ImageData::from_image(image, image_group, thumbnail_type, config))
             .collect::<Result<Vec<_>>>()?;
         let data = ImageGroupData {
             title,
@@ -191,12 +193,16 @@ impl ImageData {
         image: &Image,
         image_group: &ImageGroup,
         thumbnail_type: &ThumbnailType,
+        config: &Config,
     ) -> Result<ImageData> {
+        let thumbnail_path = image_group.thumbnail_url(image, thumbnail_type)?;
+        let placeholder = generate_placeholder(&config.output_path.join(&thumbnail_path))?;
         Ok(ImageData {
             url: url_to_string(&image_group.image_url(image)?)?,
             name: image.name.clone(),
-            thumbnail: url_to_string(&image_group.thumbnail_url(image, thumbnail_type)?)?,
+            thumbnail: url_to_string(&thumbnail_path)?,
             anchor: slug::slugify(&image.name),
+            placeholder,
         })
     }
 }

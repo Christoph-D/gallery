@@ -10,6 +10,7 @@ repository = "https://github.com/Christoph-D/gallery"
 
 [dependencies]
 anyhow = "1.0.98"
+base64 = "0.22.1"
 clap = { version = "4.5.43", features = ["derive"] }
 handlebars = "6.3.2"
 pulldown-cmark = { version = "0.13.0", default-features = false, features = ["html"] }

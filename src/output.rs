@@ -50,7 +50,7 @@ pub(crate) fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
 
     // Create work items.
     let items = {
-        let mut items = vec![html::render_overview_html(gallery, config, &templates)?];
+        let mut items = vec![];
         for i in &gallery.image_groups {
             items.extend(html::render_image_group_html(i, config, &templates)?);
             items.extend(images::render_images(i, config)?);
@@ -63,6 +63,9 @@ pub(crate) fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
         .into_par_iter()
         .map(|item| item.write(config))
         .collect::<Result<Vec<_>>>()?;
+
+    // The overview has to come last because it depends on the thumbnail images to generate placeholders.
+    html::render_overview_html(gallery, config, &templates)?.write(config)?;
 
     write_static(config)
 }
@@ -91,6 +94,7 @@ fn write_static(config: &Config) -> Result<()> {
             "js/wheel-zoom.min.js",
             include_str!("../templates/wheel-zoom.min.js"),
         ),
+        ("js/lazyload.js", include_str!("../templates/lazyload.js")),
     ] {
         let path = &config.output_path.join(path);
         match config.run_mode {
