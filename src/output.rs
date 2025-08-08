@@ -20,7 +20,7 @@ trait Item {
 }
 
 /// Writes the gallery to disk.
-pub(crate) fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
+pub fn write_files(gallery: &Gallery, config: &Config) -> Result<()> {
     let templates = html::make_templates()?;
 
     // Create work items.

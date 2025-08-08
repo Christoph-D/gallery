@@ -8,7 +8,7 @@ use time::Date;
 
 /// An input image.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) struct Image {
+pub struct Image {
     /// The user-visible name of the image.
     pub name: String,
     /// The full path to the source image.
@@ -19,7 +19,7 @@ pub(crate) struct Image {
 
 /// A list of input images.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) struct ImageGroup {
+pub struct ImageGroup {
     /// The path to the image group directory relative to the base directory.
     pub path: PathBuf,
     /// The user-visible title of the image group.
@@ -36,7 +36,7 @@ pub(crate) struct ImageGroup {
 
 /// A gallery of images.
 #[derive(Debug)]
-pub(crate) struct Gallery {
+pub struct Gallery {
     /// The list of image groups in the gallery.
     /// Sorted by date (most recent first).
     pub image_groups: Vec<ImageGroup>,
@@ -45,13 +45,13 @@ pub(crate) struct Gallery {
 /// Different thumbnail types for different use cases.
 ///
 /// The overview page uses small thumbnails, the image group pages use large thumbnails.
-pub(crate) enum ThumbnailType {
+pub enum ThumbnailType {
     Small,
     Large,
 }
 
 impl Image {
-    pub(crate) fn new(file_name: PathBuf, path: PathBuf) -> Result<Image> {
+    pub fn new(file_name: PathBuf, path: PathBuf) -> Result<Image> {
         Ok(Image {
             name: file_name
                 .file_stem()
@@ -68,23 +68,19 @@ impl Image {
 impl ImageGroup {
     /// The URL to this image group, relative to the base directory.
     /// The return value is guaranteed to consist only of ASCII characters.
-    pub(crate) fn url(&self) -> Result<PathBuf> {
+    pub fn url(&self) -> Result<PathBuf> {
         let mut p = to_web_path(&self.path)?;
         p.set_extension("html");
         Ok(PathBuf::from("html").join(p))
     }
     /// The URL to an image in this image group, relative to the base directory.
     /// The return value is guaranteed to consist only of ASCII characters.
-    pub(crate) fn image_url(&self, img: &Image) -> Result<PathBuf> {
+    pub fn image_url(&self, img: &Image) -> Result<PathBuf> {
         Ok(PathBuf::from("img").join(self.image_filename(img)?))
     }
     /// The URL to an image in this image group, relative to the base directory.
     /// The return value is guaranteed to consist only of ASCII characters.
-    pub(crate) fn thumbnail_url(
-        &self,
-        img: &Image,
-        thumbnail_type: &ThumbnailType,
-    ) -> Result<PathBuf> {
+    pub fn thumbnail_url(&self, img: &Image, thumbnail_type: &ThumbnailType) -> Result<PathBuf> {
         let mut suffix = self.image_filename(img)?;
         // Always use webp for thumbnails to get a reasonable quality.
         suffix.set_extension("webp");
@@ -96,7 +92,7 @@ impl ImageGroup {
     }
     /// The web-safe filename of an image in this image group.
     /// The return value is guaranteed to consist only of ASCII characters.
-    pub(crate) fn image_filename(&self, img: &Image) -> Result<PathBuf> {
+    pub fn image_filename(&self, img: &Image) -> Result<PathBuf> {
         to_web_path(&self.path.join(&img.file_name))
     }
 }

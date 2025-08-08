@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::{fmt, fs};
 use time::{Date, macros::format_description};
 
-pub(crate) fn gallery_from_dir(path: &Path) -> Result<Gallery> {
+pub fn gallery_from_dir(path: &Path) -> Result<Gallery> {
     let mut image_groups = Vec::<ImageGroup>::new();
     for d in read_dir(path)?.iter().filter(|d| d.is_dir) {
         let contents = read_dir(&d.path)?;
