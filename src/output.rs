@@ -4,39 +4,14 @@
 mod html;
 mod images;
 
+use crate::config::{Config, GalleryOrder, RunMode};
 use crate::error::PathErrorContext;
 use crate::model::Gallery;
 
 use anyhow::Result;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::fs;
-use std::path::{Path, PathBuf};
-
-/// Normal or dryrun (read-only) mode.
-pub(crate) enum RunMode {
-    Normal,
-    DryRun,
-}
-
-/// Image group order.
-pub(crate) enum GalleryOrder {
-    MostRecentFirst,
-    OldestFirst,
-}
-
-/// Configuration options for the output module.
-pub(crate) struct Config {
-    /// The target directory where to write the gallery.
-    pub output_path: PathBuf,
-    /// Normal or dryrun (read-only) mode.
-    pub run_mode: RunMode,
-    /// Image group order.
-    pub order: GalleryOrder,
-    /// The top-level title of the generated gallery.
-    pub page_title: String,
-    /// An optional footer to show (for example) a copyright notice.
-    pub page_footer: Option<String>,
-}
+use std::path::Path;
 
 /// A work item containing something to be written to disk.
 trait Item {

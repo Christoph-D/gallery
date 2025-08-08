@@ -1,4 +1,5 @@
 //! A static site generator for photo galleries.
+mod config;
 mod error;
 mod input;
 mod model;
@@ -6,6 +7,7 @@ mod output;
 
 use anyhow::{Context, Result};
 use clap::Parser;
+use config::{Config, GalleryOrder, RunMode};
 use std::path::PathBuf;
 
 /// Commandline arguments.
@@ -38,24 +40,24 @@ struct Cli {
 }
 
 impl Cli {
-    fn run_mode(&self) -> output::RunMode {
+    fn run_mode(&self) -> RunMode {
         if self.dry_run {
-            output::RunMode::DryRun
+            RunMode::DryRun
         } else {
-            output::RunMode::Normal
+            RunMode::Normal
         }
     }
 
-    fn order(&self) -> output::GalleryOrder {
+    fn order(&self) -> GalleryOrder {
         if self.oldest_first {
-            output::GalleryOrder::OldestFirst
+            GalleryOrder::OldestFirst
         } else {
-            output::GalleryOrder::MostRecentFirst
+            GalleryOrder::MostRecentFirst
         }
     }
 
-    fn output_config(&self) -> output::Config {
-        output::Config {
+    fn output_config(&self) -> Config {
+        Config {
             output_path: PathBuf::from(&self.output),
             order: self.order(),
             run_mode: self.run_mode(),
