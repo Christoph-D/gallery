@@ -79,12 +79,16 @@ fn test_simple_input() {
     assert!(index.contains("Summit"));
     assert!(index.contains("href=\"img/2021-01-01-fuji-japan-summit.webp\""));
 
-    assert!(outputdir
-        .join("img/2021-01-01-fuji-japan-summit.webp")
-        .is_file());
-    assert!(outputdir
-        .join("thumbnails/small/2021-01-01-fuji-japan-summit.webp")
-        .is_file());
+    assert!(
+        outputdir
+            .join("img/2021-01-01-fuji-japan-summit.webp")
+            .is_file()
+    );
+    assert!(
+        outputdir
+            .join("thumbnails/small/2021-01-01-fuji-japan-summit.webp")
+            .is_file()
+    );
 }
 
 #[test]

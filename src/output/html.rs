@@ -5,9 +5,9 @@
 //! * one page per image group for image groups with markdown files.
 mod markdown;
 
-use super::{create_parent_directories, Config, GalleryOrder, Item, RunMode};
+use super::{Config, GalleryOrder, Item, RunMode, create_parent_directories};
 
-use crate::error::{path_error, PathErrorContext};
+use crate::error::{PathErrorContext, path_error};
 use crate::model::{Gallery, Image, ImageGroup, ThumbnailType};
 
 use anyhow::{Context, Result};

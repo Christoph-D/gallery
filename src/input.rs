@@ -8,7 +8,7 @@ use anyhow::Result;
 use regex::Regex;
 use std::path::{Path, PathBuf};
 use std::{fmt, fs};
-use time::{macros::format_description, Date};
+use time::{Date, macros::format_description};
 
 pub(crate) fn gallery_from_dir(path: &Path) -> Result<Gallery> {
     let mut image_groups = Vec::<ImageGroup>::new();
@@ -75,10 +75,10 @@ impl DirEntry {
     fn is_image(&self) -> bool {
         self.path
             .extension()
-            .map_or(false, |e| e == "webp" || e == "jpeg")
+            .is_some_and(|e| e == "webp" || e == "jpeg")
     }
     fn is_index(&self) -> bool {
-        self.path.file_name().map_or(false, |f| f == "index.md")
+        self.path.file_name().is_some_and(|f| f == "index.md")
     }
 }
 

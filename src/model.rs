@@ -143,7 +143,7 @@ fn to_web_path(path: &Path) -> Result<PathBuf> {
 
 #[cfg(test)]
 mod tests {
-    use super::{to_web_path, Image, ImageGroup, ThumbnailType};
+    use super::{Image, ImageGroup, ThumbnailType, to_web_path};
     use std::path::{Path, PathBuf};
     use time::{Date, Month};
 

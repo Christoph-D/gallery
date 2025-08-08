@@ -1,11 +1,11 @@
 //! Writes the images and thumbnails that make up the gallery.
 use super::Item;
-use super::{create_parent_directories, Config, RunMode};
+use super::{Config, RunMode, create_parent_directories};
 
 use crate::error::PathErrorContext;
 use crate::model::{Image, ImageGroup, ThumbnailType};
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use std::path::{Path, PathBuf};
 use std::{fs, process};
 

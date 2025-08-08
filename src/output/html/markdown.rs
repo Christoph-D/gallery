@@ -14,8 +14,8 @@ use super::ImageData;
 
 use crate::error::PathErrorContext;
 
-use anyhow::{anyhow, Result};
-use pulldown_cmark::{html, Event, Parser};
+use anyhow::{Result, anyhow};
+use pulldown_cmark::{Event, Parser, html};
 use std::collections::{HashMap, HashSet};
 use std::{fs, path::Path};
 
