@@ -9,16 +9,16 @@ license = "AGPL-3.0-or-later"
 repository = "https://github.com/Christoph-D/gallery"
 
 [dependencies]
-anyhow = "1.0.98"
+anyhow = "1.0.100"
 base64 = "0.22.1"
-clap = { version = "4.5.43", features = ["derive"] }
+clap = { version = "4.5.48", features = ["derive"] }
 handlebars = "6.3.2"
 pulldown-cmark = { version = "0.13.0", default-features = false, features = ["html"] }
-rayon = "1.10.0"
-regex = "1.11.1"
-serde = { version = "1.0.219", features = ["derive"] }
+rayon = "1.11.0"
+regex = "1.11.2"
+serde = { version = "1.0.225", features = ["derive"] }
 slug = "0.1.6"
-time = { version = "0.3.41", features = ["macros", "parsing"] }
+time = { version = "0.3.44", features = ["macros", "parsing"] }
 
 [dev-dependencies]
-tempfile = "3.20.0"
+tempfile = "3.22.0"
