@@ -1,0 +1,46 @@
+{
+    "name": "Static Photo Gallery",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "anthropic.claude-code",
+                "Continue.continue",
+                "DavidAnson.vscode-markdownlint",
+                "eamodio.gitlens",
+                "esbenp.prettier-vscode",
+                "rust-lang.rust-analyzer",
+                "saoudrizwan.claude-dev"
+            ],
+            "settings": {
+                "[markdown]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode",
+                    "diffEditor.ignoreTrimWhitespace": false,
+                    "editor.wordWrap": "on",
+                    "editor.quickSuggestions": {
+                        "comments": "off",
+                        "strings": "off",
+                        "other": "off"
+                    }
+                },
+                "prettier.proseWrap": "always",
+                "markdownlint.config": {
+                    "no-duplicate-heading": {
+                        "siblings_only": true
+                    }
+                },
+                "files.insertFinalNewline": true
+            }
+        }
+    },
+    "workspaceFolder": "/workspaces/gallery",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/gallery,type=bind,consistency=cached",
+    "remoteUser": "vscode",
+    "mounts": [
+        "source=bashhistory-gallery,target=/commandhistory,type=volume",
+        "source=claude-code-config-gallery,target=/home/vscode/claude-config,type=volume",
+        "source=/etc/localtime,target=/usr/share/zoneinfo/hostlocaltime,type=bind,readonly"
+    ]
+}
