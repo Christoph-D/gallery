@@ -1,6 +1,6 @@
 # Gallery
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/Christoph-D/gallery/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/Christoph-D/gallery/tree/main)
+[![CI](https://github.com/Christoph-D/gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/Christoph-D/gallery/actions/workflows/ci.yml)
 
 A static site generator for photo galleries.
 
