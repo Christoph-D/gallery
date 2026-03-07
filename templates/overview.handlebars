@@ -195,7 +195,7 @@
     const images = [
       {{#each image_groups}}
       {{#each images}}
-      { url: "{{url}}", title: "{{../date}} {{../title}}, {{name}}" },
+      { url: "{{url}}", title: "{{../date}}{{#if ../title}} {{../title}},{{/if}} {{name}}" },
       {{/each}}
       {{/each}}
     ]
