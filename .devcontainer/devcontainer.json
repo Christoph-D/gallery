@@ -12,21 +12,9 @@
             ],
             "settings": {
                 "[markdown]": {
-                    "editor.defaultFormatter": "esbenp.prettier-vscode",
-                    "diffEditor.ignoreTrimWhitespace": false,
-                    "editor.wordWrap": "on",
-                    "editor.quickSuggestions": {
-                        "comments": "off",
-                        "strings": "off",
-                        "other": "off"
-                    }
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
                 },
                 "prettier.proseWrap": "always",
-                "markdownlint.config": {
-                    "no-duplicate-heading": {
-                        "siblings_only": true
-                    }
-                },
                 "files.insertFinalNewline": true
             }
         }
